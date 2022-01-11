@@ -1,6 +1,7 @@
 import smtplib
 import pytz
 import string
+import os
 
 from datetime import datetime, timedelta
 from random import choice
@@ -23,7 +24,7 @@ def generate_string(length):
 
 
 login = "yang.liquan87@gmail.com"
-password = "scxroovqwbvbnwqt"
+password = os.getenv("APP_PASSWORD")
 
 # calendar props
 prodid = "-//Pursuit of Zen//Book Me//EN"
