@@ -14,7 +14,7 @@ load_dotenv()
 CRLF = "\r\n"
 login = "yang.liquan87@gmail.com"
 password = os.getenv("APP_PASSWORD", "default")
-attendees = ["yang.liquan87@gmail.com", "tidus_the_chosen@hotmail.com", "thedevhiro@gmail.com"]
+attendees = ["yang.liquan87@gmail.com", "lyang@hush.com"]
 organizer = "ORGANIZER;CN=organiser:mailto:yang.liquan87"+CRLF+" @gmail.com"
 fro = "Liquan Yang <yang.liquan87@gmail.com>"
 
@@ -30,7 +30,7 @@ dtend = dtend.strftime("%Y%m%dT%H%M%SZ")
 description = "DESCRIPTION: test invitation from pyICSParser"+CRLF
 attendee = ""
 for att in attendees:
-    attendee += "ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE"+CRLF+" ;CN="+att+";X-NUM-GUESTS=0:"+CRLF+" mailto:"+att+CRLF
+    attendee += "ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE"+CRLF+" ;CN="+att+";X-NUM-GUESTS=0:"+CRLF+" mailto:"+att+CRLF
 ical = "BEGIN:VCALENDAR"+CRLF+"PRODID:pyICSParser"+CRLF+"VERSION:2.0"+CRLF+"CALSCALE:GREGORIAN"+CRLF
 ical+="METHOD:REQUEST"+CRLF+"BEGIN:VEVENT"+CRLF+"DTSTART:"+dtstart+CRLF+"DTEND:"+dtend+CRLF+"DTSTAMP:"+dtstamp+CRLF+organizer+CRLF
 ical+= "UID:FIXMEUID"+dtstamp+CRLF

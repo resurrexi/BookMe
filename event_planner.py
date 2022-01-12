@@ -14,7 +14,7 @@ class EventPlanner:
     def __init__(self, guests, schedule):
         self.token_file = SECRETS_PATH / 'token.json'
         self.credentials_file = SECRETS_PATH / 'credentials.json'
-        guests = [{"email": email} for email in guests]
+        guests = [{"email": email, "responseStatus": "accepted" if idx == 0 else "needsAction"} for idx, email in enumerate(guests)]
         service = self._authorize()
         self.event_states = self._plan_event(guests, schedule, service)
 
@@ -39,13 +39,14 @@ class EventPlanner:
 
     def _plan_event(self, attendees, event_time, service):
         event = {
-            "summary": "test_meeting",
+            "summary": "Test meeting",
             "start": {
                 "dateTime": event_time["start"]
             },
             "end": {
                 "dateTime": event_time["end"]
             },
+            "description": "This is a test meeting. Join by calling +18001119999. <b>HTML</b> is allowed.",
             "attendees": attendees,
             "conferenceData": {
                 "createRequest": {
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     end = datetime.utcnow() + timedelta(hours=2)
 
     plan = EventPlanner(
-        ["yang.liquan87@gmail.com", "tidus_the_chosen@hotmail.com"],
+        ["yang.liquan87@gmail.com", "lyang@hush.com", "thedevhiro@gmail.com"],
         {
             "start": start.isoformat() + 'Z',
             "end": end.isoformat() + 'Z',
