@@ -6,12 +6,15 @@ import os
 from datetime import datetime, timedelta
 from random import choice
 from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
+from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 from pytz import timezone
+from dotenv import load_dotenv
 from icalendar import Calendar, Event, vCalAddress, vText
+
+load_dotenv()
 
 # implementation credits
 # https://stackoverflow.com/questions/57141694/why-encode-base64-give-me-typeerror-expected-bytes-like-object-not-nonetype/62255629#62255629
@@ -20,11 +23,13 @@ from icalendar import Calendar, Event, vCalAddress, vText
 
 def generate_string(length):
     choices = string.ascii_lowercase + string.digits
-    return ''.join(choice(choices) for i in range(length))
+    return ''.join(choice(choices) for _ in range(length))
 
 
+DATE_FORMAT = "%Y%m%dT%H%M%SZ"
 login = "yang.liquan87@gmail.com"
-password = os.getenv("APP_PASSWORD")
+password = os.getenv("APP_PASSWORD", "default")
+email_from = "Liquan Yang <yang.liquan87@gmail.com>"
 
 # calendar props
 prodid = "-//Pursuit of Zen//Book Me//EN"
@@ -41,7 +46,7 @@ dtstamp = datetime.now(utc)
 attendees = ["yang.liquan87@gmail.com", "tidus_the_chosen@hotmail.com", "2360953680@qq.com"]
 organizer = "yang.liquan87@gmail.com"
 summary = "Test Invitation"
-description = "This is a test invitation.\n\nYou were identified as a test user."
+description = "This is a test invitation. You were identified as a test user."
 location = ""
 sequence = "0"
 status = "CONFIRMED"
@@ -56,9 +61,9 @@ cal.add("METHOD", method)
 
 # generate event
 event = Event()
-event.add("DTSTART", dtstart)
-event.add("DTEND", dtend)
-event.add("DTSTAMP", dtstamp)
+event.add("DTSTART", vText(dtstart.strftime(DATE_FORMAT)))
+event.add("DTEND", vText(dtend.strftime(DATE_FORMAT)))
+event.add("DTSTAMP", vText(dtstamp.strftime(DATE_FORMAT)))
 event_organizer = vCalAddress(f"mailto:{organizer}")
 event_organizer.params["CN"] = vText(organizer)
 event["ORGANIZER"] = event_organizer
@@ -72,9 +77,9 @@ for idx, attendee in enumerate(attendees):
     event_attendee.params["CN"] = vText(attendee)
     event_attendee.params["X-NUM-GUESTS"] = vText("0")
     event.add("ATTENDEE", event_attendee, encode=0)
-event.add("CREATED", dtstamp)
+event.add("CREATED", vText(dtstamp.strftime(DATE_FORMAT)))
 event.add("DESCRIPTION", description)
-event.add("LAST-MODIFIED", dtstamp)
+event.add("LAST-MODIFIED", vText(dtstamp.strftime(DATE_FORMAT)))
 event.add("LOCATION", location)
 event.add("SEQUENCE", sequence)
 event.add("STATUS", status)
@@ -82,26 +87,27 @@ event.add("SUMMARY", summary)
 event.add("TRANSP", transparency)
 cal.add_component(event)
 
+cal_output = cal.to_ical(False).decode('utf-8')
+
 # init email object
 email_body = "Test email body"
 email_body_bin = "Email body in binary"
 msg = MIMEMultipart("mixed")
-msg["Reply-To"] = organizer
+msg["Reply-To"] = email_from
 msg["Date"] = formatdate(localtime=True)
 msg["Subject"] = summary
-msg["From"] = organizer
+msg["From"] = email_from
 msg["To"] = ",".join(attendees)
 
-email_part = MIMEText(email_body, "html", "UTF-8")
-calendar_part = MIMEText(cal.to_ical().decode("utf-8"), 'calendar;method=REQUEST')
+email_part = MIMEText(email_body, "html", "utf-8")
+calendar_part = MIMEText(cal_output, 'calendar;method=REQUEST')
 
 alternative_msg = MIMEMultipart("alternative")
 msg.attach(alternative_msg)
 
-cal_attach = MIMEApplication(cal.to_ical(), "ics")
-cal_attach.add_header("Content-Type", "application/ics", name="invite.ics")
+cal_attach = MIMEText(cal_output, "calendar")
+encoders.encode_base64(cal_attach)
 cal_attach.add_header("Content-Disposition", "attachment", filename="invite.ics")
-cal_attach.add_header("Content-Transfer-Encoding", "base64")
 
 email_attach = MIMEText("", "plain")
 encoders.encode_base64(email_attach)
