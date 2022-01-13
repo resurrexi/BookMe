@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "bookme"
+version = "0.0.1"
+description = "A booking app for developers that integrates with their Google calendar"
+authors = ["Liquan Yang <thedevhiro@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+google-api-python-client = "^2.34.0"
+google-auth-httplib2 = "^0.1.0"
+google-auth-oauthlib = "^0.4.6"
+python-dotenv = "^0.19.2"
+Django = "^4.0.1"
+django-tailwind = "^3.0.1"
+django-htmx = "^1.8.0"
+django-phonenumber-field = "^6.0.0"
+phonenumberslite = "^8.12.41"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.12.2"
+flake8 = "^4.0.1"
+black = "^21.12b0"
+pylint-django = "^2.5.0"
+
+[tool.black]
+line-length = 79
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
