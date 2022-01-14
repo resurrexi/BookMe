@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from ..models import Location
+from ..models import Location, EventType, Schedule
 
 
 class LocationTest(TestCase):
@@ -29,3 +29,36 @@ class LocationTest(TestCase):
                 location_type=Location.LocationType.PHONE_CALL,
                 phone_number="+18002223333",
             )
+
+
+class EventTypeTest(TestCase):
+    def test_slug_is_auto_generated(self):
+        location = Location.objects.create(
+            location_type=Location.LocationType.PHONE_CALL,
+            phone_number="+18002223333",
+        )
+        schedule = Schedule.objects.create(
+            schedule_name="Regular schedule",
+            sun_start="9:00:00",
+            sun_end="17:00:00",
+            mon_start="9:00:00",
+            mon_end="17:00:00",
+            tue_start="9:00:00",
+            tue_end="17:00:00",
+            wed_start="9:00:00",
+            wed_end="17:00:00",
+            thu_start="9:00:00",
+            thu_end="17:00:00",
+            fri_start="9:00:00",
+            fri_end="17:00:00",
+            sat_start="9:00:00",
+            sat_end="17:00:00",
+        )
+        event_type = EventType.objects.create(
+            name="15 min with recruiter",
+            duration=EventType.Duration.MIN_15,
+            horizon=EventType.Horizon.DAYS_30,
+            location=location,
+            schedule=schedule,
+        )
+        self.assertEqual(event_type.slug, "15-min-with-recruiter")
