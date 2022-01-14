@@ -134,25 +134,40 @@ class Event(models.Model):
         default=uuid.uuid4,
         editable=False,
     )
-    event_type = models.ForeignKey(
-        EventType,
-        on_delete=models.SET_NULL,
-        blank=True,
+    # Do not link the EventType as a FK. Instead, copy the values of
+    # `location_type`, `phone_number`, and `description` from the
+    # EventType. This is to prevent inadvertant changes to the Event
+    # in case the admin decides to modify the EventType after the
+    # Event is confirmed and booked.
+    location_type = models.IntegerField(
         null=True,
+        editable=False,
+        help_text="1=Phone call, 2=Google Meet",
+    )
+    phone_number = PhoneNumberField(
+        blank=True,
+        editable=False,
+    )
+    description = models.TextField(
+        blank=True,
         editable=False,
     )
     start_time = models.DateTimeField(
+        null=True,
         editable=False,
     )
+    # auto-calculate from EventType's duration
     end_time = models.DateTimeField(
+        null=True,
         editable=False,
     )
     booker_name = models.CharField(
         max_length=64,
+        blank=True,
         editable=False,
     )
-    booker_email = models.CharField(
-        max_length=64,
+    booker_email = models.EmailField(
+        blank=True,
         editable=False,
     )
 
