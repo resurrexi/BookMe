@@ -71,6 +71,10 @@ class Location(models.Model):
                     {"phone_number": "Must be unique"},
                 )
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
 class EventType(models.Model):
     class Duration(models.IntegerChoices):
