@@ -103,11 +103,16 @@ class EventType(models.Model):
         help_text="How far out can this event type be scheduled in days?",
     )
     location = models.ForeignKey(
-        Location,
+        "Location",
         on_delete=models.CASCADE,
     )
     description = models.TextField(
         blank=True,
+    )
+    schedule = models.ForeignKey(
+        "Schedule",
+        on_delete=models.CASCADE,
+        help_text="Schedule to use for availability hours",
     )
 
     def __str__(self):
@@ -169,6 +174,7 @@ class Schedule(models.Model):
         return self.schedule_name
 
     class Meta:
+        verbose_name = "availability schedule"
         constraints = [
             models.CheckConstraint(
                 check=models.Q(sun_start__lt=models.F("sun_end")),
