@@ -176,56 +176,214 @@ class Event(models.Model):
 
 
 class Schedule(models.Model):
+    LOW_BOUND = "Must be a low bounded value"
+    HIGH_BOUND = "Must be a high bounded value"
+    IS_REQUIRED = "This field is required"
+
     schedule_name = models.CharField(
         max_length=64,
     )
-    sun_start = models.TimeField()
-    sun_end = models.TimeField()
-    mon_start = models.TimeField()
-    mon_end = models.TimeField()
-    tue_start = models.TimeField()
-    tue_end = models.TimeField()
-    wed_start = models.TimeField()
-    wed_end = models.TimeField()
-    thu_start = models.TimeField()
-    thu_end = models.TimeField()
-    fri_start = models.TimeField()
-    fri_end = models.TimeField()
-    sat_start = models.TimeField()
-    sat_end = models.TimeField()
+    sun_off = models.BooleanField(
+        default=True,
+    )
+    sun_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    sun_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    mon_off = models.BooleanField(
+        default=False,
+    )
+    mon_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    mon_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    tue_off = models.BooleanField(
+        default=False,
+    )
+    tue_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    tue_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    wed_off = models.BooleanField(
+        default=False,
+    )
+    wed_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    wed_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    thu_off = models.BooleanField(
+        default=False,
+    )
+    thu_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    thu_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    fri_off = models.BooleanField(
+        default=False,
+    )
+    fri_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    fri_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    sat_off = models.BooleanField(
+        default=True,
+    )
+    sat_start = models.TimeField(
+        null=True,
+        blank=True,
+    )
+    sat_end = models.TimeField(
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return self.schedule_name
 
     class Meta:
         verbose_name = "availability schedule"
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(sun_start__lt=models.F("sun_end")),
-                name="sun_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(mon_start__lt=models.F("mon_end")),
-                name="mon_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(tue_start__lt=models.F("tue_end")),
-                name="tue_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(wed_start__lt=models.F("wed_end")),
-                name="wed_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(thu_start__lt=models.F("thu_end")),
-                name="thu_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(fri_start__lt=models.F("fri_end")),
-                name="fri_time_range",
-            ),
-            models.CheckConstraint(
-                check=models.Q(sat_start__lt=models.F("sat_end")),
-                name="sat_time_range",
-            ),
-        ]
+
+    def clean(self):
+        # ensure time ranges respect min and max
+        if self.sun_start and self.sun_end and self.sun_start > self.sun_end:
+            raise ValidationError(
+                {
+                    "sun_start": self.LOW_BOUND,
+                    "sun_end": self.HIGH_BOUND,
+                }
+            )
+        if self.mon_start and self.mon_end and self.mon_start > self.mon_end:
+            raise ValidationError(
+                {
+                    "mon_start": self.LOW_BOUND,
+                    "mon_end": self.HIGH_BOUND,
+                }
+            )
+        if self.tue_start and self.tue_end and self.tue_start > self.tue_end:
+            raise ValidationError(
+                {
+                    "tue_start": self.LOW_BOUND,
+                    "tue_end": self.HIGH_BOUND,
+                }
+            )
+        if self.wed_start and self.wed_end and self.wed_start > self.wed_end:
+            raise ValidationError(
+                {
+                    "wed_start": self.LOW_BOUND,
+                    "wed_end": self.HIGH_BOUND,
+                }
+            )
+        if self.thu_start and self.thu_end and self.thu_start > self.thu_end:
+            raise ValidationError(
+                {
+                    "thu_start": self.LOW_BOUND,
+                    "thu_end": self.HIGH_BOUND,
+                }
+            )
+        if self.fri_start and self.fri_end and self.fri_start > self.fri_end:
+            raise ValidationError(
+                {
+                    "fri_start": self.LOW_BOUND,
+                    "fri_end": self.HIGH_BOUND,
+                }
+            )
+        if self.sat_start and self.sat_end and self.sat_start > self.sat_end:
+            raise ValidationError(
+                {
+                    "sat_start": self.LOW_BOUND,
+                    "sat_end": self.HIGH_BOUND,
+                }
+            )
+
+        # ensure times are filled if days are on
+        if not self.sun_off:
+            if not self.sun_start:
+                raise ValidationError(
+                    {"sun_start": self.IS_REQUIRED},
+                )
+            if not self.sun_end:
+                raise ValidationError(
+                    {"sun_end": self.IS_REQUIRED},
+                )
+        if not self.mon_off:
+            if not self.mon_start:
+                raise ValidationError(
+                    {"mon_start": self.IS_REQUIRED},
+                )
+            if not self.mon_end:
+                raise ValidationError(
+                    {"mon_end": self.IS_REQUIRED},
+                )
+        if not self.tue_off:
+            if not self.tue_start:
+                raise ValidationError(
+                    {"tue_start": self.IS_REQUIRED},
+                )
+            if not self.tue_end:
+                raise ValidationError(
+                    {"tue_end": self.IS_REQUIRED},
+                )
+        if not self.wed_off:
+            if not self.wed_start:
+                raise ValidationError(
+                    {"wed_start": self.IS_REQUIRED},
+                )
+            if not self.wed_end:
+                raise ValidationError(
+                    {"wed_end": self.IS_REQUIRED},
+                )
+        if not self.wed_off:
+            if not self.wed_start:
+                raise ValidationError(
+                    {"wed_start": self.IS_REQUIRED},
+                )
+            if not self.wed_end:
+                raise ValidationError(
+                    {"wed_end": self.IS_REQUIRED},
+                )
+        if not self.thu_off:
+            if not self.thu_start:
+                raise ValidationError(
+                    {"thu_start": self.IS_REQUIRED},
+                )
+            if not self.fri_end:
+                raise ValidationError(
+                    {"fri_end": self.IS_REQUIRED},
+                )
+        if not self.sat_off:
+            if not self.sat_start:
+                raise ValidationError(
+                    {"sat_start": self.IS_REQUIRED},
+                )
+            if not self.sat_end:
+                raise ValidationError(
+                    {"sat_end": self.IS_REQUIRED},
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
