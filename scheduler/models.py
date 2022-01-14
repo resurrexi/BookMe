@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils.text import slugify
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -84,11 +85,11 @@ class EventType(models.Model):
         DAYS_90 = 3, "90 days"
 
     name = models.CharField(
-        max_length=256,
+        max_length=64,
         unique=True,
     )
-    slug = models.CharField(
-        max_length=256,
+    slug = models.SlugField(
+        max_length=64,
         unique=True,
         editable=False,
     )
@@ -97,7 +98,7 @@ class EventType(models.Model):
         default=Duration.MIN_15,
         help_text="Duration of event in minutes",
     )
-    horizon = models.PositiveIntegerField(
+    horizon = models.IntegerField(
         choices=Horizon.choices,
         default=Horizon.DAYS_30,
         help_text="How far out can this event type be scheduled in days?",
@@ -117,6 +118,10 @@ class EventType(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class Event(models.Model):
