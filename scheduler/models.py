@@ -32,27 +32,43 @@ class Location(models.Model):
                 ],
                 condition=models.Q(location_type=2),
                 name="one_google_meet_type",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=[
+                    "phone_number",
+                ],
+                condition=models.Q(location_type=1),
+                name="unique_number_for_phone_call",
+            ),
         ]
 
     def clean(self):
-        # ensure phone number is populated if Phone call type
-        if (
-            self.location_type == self.LocationType.PHONE_CALL
-            and not self.phone_number
-        ):
-            raise ValidationError(
-                {"phone_number": "Missing phone number"},
-            )
+        if self.location_type == self.LocationType.GOOGLE_MEET:
+            # ensure there's only one Google Meet type
+            obj_count = Location.objects.filter(
+                location_type=self.LocationType.GOOGLE_MEET
+            ).count()
+            if obj_count > 0:
+                raise ValidationError(
+                    {"location_type": "Only one Google Meet type allowed"},
+                )
 
-        # ensure there's only one Google Meet type
-        ct = Location.objects.filter(
-            location_type=self.LocationType.GOOGLE_MEET
-        ).count()
-        if self.location_type == self.LocationType.GOOGLE_MEET and ct > 0:
-            raise ValidationError(
-                {"location_type": "Only one Google Meet type allowed"},
-            )
+        if self.location_type == self.LocationType.PHONE_CALL:
+            # ensure phone number is populated
+            if not self.phone_number:
+                raise ValidationError(
+                    {"phone_number": "Missing phone number"},
+                )
+
+            # ensure only unique phone number
+            obj_count = Location.objects.filter(
+                location_type=self.LocationType.PHONE_CALL,
+                phone_number=self.phone_number,
+            ).count()
+            if obj_count > 0:
+                raise ValidationError(
+                    {"phone_number": "Must be unique"},
+                )
 
 
 class EventType(models.Model):
