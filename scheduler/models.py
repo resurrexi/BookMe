@@ -356,19 +356,19 @@ class Schedule(models.Model):
                 raise ValidationError(
                     {"wed_end": self.IS_REQUIRED},
                 )
-        if not self.wed_off:
-            if not self.wed_start:
-                raise ValidationError(
-                    {"wed_start": self.IS_REQUIRED},
-                )
-            if not self.wed_end:
-                raise ValidationError(
-                    {"wed_end": self.IS_REQUIRED},
-                )
         if not self.thu_off:
             if not self.thu_start:
                 raise ValidationError(
                     {"thu_start": self.IS_REQUIRED},
+                )
+            if not self.thu_end:
+                raise ValidationError(
+                    {"thu_end": self.IS_REQUIRED},
+                )
+        if not self.fri_off:
+            if not self.fri_start:
+                raise ValidationError(
+                    {"fri_start": self.IS_REQUIRED},
                 )
             if not self.fri_end:
                 raise ValidationError(
