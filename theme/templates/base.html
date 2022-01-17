@@ -1,0 +1,48 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <title>Book Me</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'bookme/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'bookme/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'bookme/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'bookme/favicon/manifest.json' %}">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {# the above tags must come first in the head before anything else -#}
+    <script src="https://unpkg.com/htmx.org@1.6.1" integrity="sha384-tvG/2mnCFmGQzYC1Oh3qxQ7CkQ9kMzYjWZSNtrRZygHPDDqottzEJsqS4oUVodhW" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		{% tailwind_css %}
+    {% block extrahead %}
+    {% endblock %}
+	</head>
+	<body class="bg-gray-50 leading-normal tracking-normal">
+    <main class="flex-grow lg:relative">
+      {% if messages %}
+        <section>
+          <div class="col-sm-12">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} flash-message">
+                <a class="close" data-dismiss="alert"><i class="fa fa-remove"></i></a>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+      {% block content %}
+      {% endblock %}
+    </main>
+    <footer class="bg-secondary-800" aria-labelledby="footer-heading">
+      <h2 id="footer-heading" class="sr-only">Footer</h2>
+      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+        <p class="mt-8 text-center text-base text-gray-400">
+          &copy; {% now 'Y' %} Pursuit of Zen
+        </p>
+      </div>
+    </footer>
+    {%  block extrascripts %}
+    {%  endblock %}
+	</body>
+</html>

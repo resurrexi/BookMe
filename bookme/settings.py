@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "phonenumber_field",
+    "tailwind",
+    "theme",
+    "django_browser_reload",
     "django_htmx",
     "scheduler.apps.SchedulerConfig",
 ]
@@ -58,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "bookme.urls"
@@ -141,3 +145,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Security stuff
 SECURE_SSL_REDIRECT = bool(int(os.getenv("FORCE_HTTPS", "0")))
 INTERNAL_IPS = ("127.0.0.1",)
+
+# django-tailwind
+TAILWIND_APP_NAME = "theme"

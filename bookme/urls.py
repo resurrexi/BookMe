@@ -21,6 +21,7 @@ admin.site.site_header = "BookMe Administration"
 admin.site.index_title = "Site Administration"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("", include("scheduler.urls")),
+    path("admin/", admin.site.urls),
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
