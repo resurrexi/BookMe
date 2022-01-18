@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.alert-info {
+  @apply bg-blue-50;
+}
+
+.alert-success {
+  @apply bg-green-50;
+}
+
+.alert-warning {
+  @apply bg-amber-50;
+}
+
+.alert-error {
+  @apply bg-red-50;
+}
+
+.text-info {
+  @apply text-blue-700;
+}
+
+.text-success {
+  @apply text-green-700;
+}
+
+.text-warning {
+  @apply text-amber-700;
+}
+
+.text-error {
+  @apply text-red-700;
+}

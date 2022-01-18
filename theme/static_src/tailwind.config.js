@@ -42,6 +42,7 @@ module.exports = {
      */
     // '../../**/*.py'
   ],
+  darkMode: "class",
   theme: {
     colors: {
       transparent: "transparent",
@@ -52,6 +53,9 @@ module.exports = {
       neutral: colors.neutral,
       white: colors.white,
       amber: colors.amber,
+      red: colors.red,
+      green: colors.green,
+      blue: colors.blue,
     },
     extend: {},
   },
