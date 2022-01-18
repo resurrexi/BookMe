@@ -17,27 +17,25 @@
     {% block extrahead %}
     {% endblock %}
 	</head>
-	<body class="bg-gray-50 leading-normal tracking-normal">
-    <main class="flex-grow lg:relative">
+	<body class="relative flex flex-col min-h-screen h-full bg-white transition-colors duration-1000 ease-in-out dark:bg-neutral-900">
+    <main class="flex-auto">
       {% if messages %}
-        <section>
-          <div class="col-sm-12">
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} flash-message">
-                <a class="close" data-dismiss="alert"><i class="fa fa-remove"></i></a>
-                {{ message }}
-              </div>
-            {% endfor %}
-          </div>
+        <section class="text-gray-500">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} flash-message">
+              <a class="close" data-dismiss="alert"><i class="fa fa-remove"></i></a>
+              {{ message }}
+            </div>
+          {% endfor %}
         </section>
       {% endif %}
       {% block content %}
       {% endblock %}
     </main>
-    <footer class="bg-secondary-800" aria-labelledby="footer-heading">
+    <footer class="flex-none" aria-labelledby="footer-heading">
       <h2 id="footer-heading" class="sr-only">Footer</h2>
-      <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
-        <p class="mt-8 text-center text-base text-gray-400">
+      <div class="max-w-3xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+        <p class="text-center text-base text-gray-500">
           &copy; {% now 'Y' %} Pursuit of Zen
         </p>
       </div>
