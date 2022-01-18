@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="text-gray-500 dark:text-gray-400">
+    {% for event_type in event_types %}
+      {{ event_type.name }}<br />
+      {{ event_type.get_duration_display }}
+    {% endfor %}
+  </section>
+{% endblock %}
