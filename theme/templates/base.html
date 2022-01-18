@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-    <title>Book Me</title>
+    <title>Book Me by PoZ</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'bookme/favicon/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'bookme/favicon/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'bookme/favicon/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'bookme/favicon/manifest.json' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'scheduler/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'scheduler/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'scheduler/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'scheduler/site.webmanifest' %}">
 		<meta http-equiv="X-UA-Compatible" content="ie=edge">
     {# the above tags must come first in the head before anything else -#}
     <script src="https://unpkg.com/htmx.org@1.6.1" integrity="sha384-tvG/2mnCFmGQzYC1Oh3qxQ7CkQ9kMzYjWZSNtrRZygHPDDqottzEJsqS4oUVodhW" crossorigin="anonymous"></script>
@@ -18,27 +18,24 @@
     {% endblock %}
 	</head>
 	<body class="relative flex flex-col min-h-screen h-full bg-white transition-colors duration-1000 ease-in-out dark:bg-neutral-900">
-    <main class="flex-auto">
-      {% if messages %}
-        <section class="text-gray-500">
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} flash-message">
-              <a class="close" data-dismiss="alert"><i class="fa fa-remove"></i></a>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </section>
-      {% endif %}
-      {% block content %}
-      {% endblock %}
+    <main class="flex flex-auto justify-center">
+      <div class="w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        {% if messages %}
+          <section>
+            {% for message in messages %}
+              {% include 'partials/alert.html' %}
+            {% endfor %}
+          </section>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+      </div>
     </main>
-    <footer class="flex-none" aria-labelledby="footer-heading">
+    <footer class="flex-none max-w-3xl mx-auto px-4 py-4 sm:px-6 lg:px-8" aria-labelledby="footer-heading">
       <h2 id="footer-heading" class="sr-only">Footer</h2>
-      <div class="max-w-3xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
         <p class="text-center text-base text-gray-500">
           &copy; {% now 'Y' %} Pursuit of Zen
         </p>
-      </div>
     </footer>
     {%  block extrascripts %}
     {%  endblock %}
