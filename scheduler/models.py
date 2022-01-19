@@ -245,8 +245,8 @@ class Schedule(models.Model):
 
 class Event(models.Model):
     class LocationType(models.TextChoices):
-        PHONE_CALL = "Phone call"
-        GOOGLE_MEET = "Google Meet"
+        PHONE_CALL = "PHONE"
+        GOOGLE_MEET = "GMEET"
 
     class Duration(models.IntegerChoices):
         MIN_15 = 15, "15 min"
@@ -260,7 +260,7 @@ class Event(models.Model):
         editable=False,
     )
     location_type = models.CharField(
-        max_length=32,
+        max_length=8,
         choices=LocationType.choices,
         default=LocationType.PHONE_CALL,
     )
@@ -295,8 +295,16 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.booker_name} {self.start_time} - {self.end_time}"
 
+    def clean(self):
+        if self.location_type == "PHONE" and not self.phone_number:
+            raise ValidationError(
+                {"phone_number": "Required for phone call location type"}
+            )
+
     def save(self, *args, **kwargs):
         # auto-calculate end time if `start_time` is given
         if self.start_time:
-            self.end_time = self.start_time + timedelta(self.duration)
+            self.end_time = self.start_time + timedelta(minutes=self.duration)
+
+        self.full_clean()
         super().save(*args, **kwargs)
