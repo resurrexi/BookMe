@@ -1,178 +1,30 @@
 import uuid
+from datetime import timedelta
 from django.db import models
-from django.core.exceptions import ValidationError
-from django.utils.text import slugify
+from django.core.exceptions import ValidationError, PermissionDenied
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class Location(models.Model):
-    class LocationType(models.IntegerChoices):
-        PHONE_CALL = 1, "Phone call"
-        GOOGLE_MEET = 2, "Google Meet"
-
-    location_type = models.IntegerField(
-        choices=LocationType.choices,
-        default=LocationType.PHONE_CALL,
-        help_text="1=Phone call, 2=Google Meet",
-    )
+class PhoneNumber(models.Model):
     phone_number = PhoneNumberField(
         blank=True,
-        help_text="Only applies to phone call type",
     )
 
     def __str__(self):
-        if self.location_type == self.LocationType.PHONE_CALL:
-            return f"{self.get_location_type_display()} {self.phone_number}"
-        return self.get_location_type_display()
+        return f"{self.phone_number}"
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "location_type",
-                ],
-                condition=models.Q(location_type=2),
-                name="one_google_meet_type",
-            ),
-            models.UniqueConstraint(
-                fields=[
-                    "phone_number",
-                ],
-                condition=models.Q(location_type=1),
-                name="unique_number_for_phone_call",
-            ),
-        ]
-
-    def clean(self):
-        if self.location_type == self.LocationType.GOOGLE_MEET:
-            # ensure there's only one Google Meet type
-            obj_count = Location.objects.filter(
-                location_type=self.LocationType.GOOGLE_MEET
-            ).count()
-            if obj_count > 0:
-                raise ValidationError(
-                    {"location_type": "Only one Google Meet type allowed"},
-                )
-
-        if self.location_type == self.LocationType.PHONE_CALL:
-            # ensure phone number is populated
-            if not self.phone_number:
-                raise ValidationError(
-                    {"phone_number": "Missing phone number"},
-                )
-
-            # ensure only unique phone number
-            obj_count = Location.objects.filter(
-                location_type=self.LocationType.PHONE_CALL,
-                phone_number=self.phone_number,
-            ).count()
-            if obj_count > 0:
-                raise ValidationError(
-                    {"phone_number": "Must be unique"},
-                )
+        verbose_name = "my phone number"
+        verbose_name_plural = "my phone number"
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        # only 1 instance allowed
+        if not self.pk and PhoneNumber.objects.exists():
+            raise ValidationError("Only one instance allowed")
         super().save(*args, **kwargs)
 
-
-class EventType(models.Model):
-    class Duration(models.IntegerChoices):
-        MIN_15 = 1, "15 min"
-        MIN_30 = 2, "30 min"
-        MIN_45 = 3, "45 min"
-        MIN_60 = 4, "60 min"
-
-    class Horizon(models.IntegerChoices):
-        DAYS_30 = 1, "30 days"
-        DAYS_60 = 2, "60 days"
-        DAYS_90 = 3, "90 days"
-
-    name = models.CharField(
-        max_length=64,
-        unique=True,
-    )
-    slug = models.SlugField(
-        max_length=64,
-        unique=True,
-        editable=False,
-    )
-    duration = models.IntegerField(
-        choices=Duration.choices,
-        default=Duration.MIN_15,
-        help_text="Duration of event in minutes",
-    )
-    horizon = models.IntegerField(
-        choices=Horizon.choices,
-        default=Horizon.DAYS_30,
-        help_text="How far out can this event type be scheduled in days?",
-    )
-    location = models.ForeignKey(
-        "Location",
-        on_delete=models.CASCADE,
-    )
-    description = models.TextField(
-        blank=True,
-    )
-    schedule = models.ForeignKey(
-        "Schedule",
-        on_delete=models.CASCADE,
-        help_text="Schedule to use for availability hours",
-    )
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-
-class Event(models.Model):
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
-    # Do not link the EventType as a FK. Instead, copy the values of
-    # `location_type`, `phone_number`, and `description` from the
-    # EventType. This is to prevent inadvertant changes to the Event
-    # in case the admin decides to modify the EventType after the
-    # Event is confirmed and booked.
-    location_type = models.IntegerField(
-        null=True,
-        editable=False,
-        help_text="1=Phone call, 2=Google Meet",
-    )
-    phone_number = PhoneNumberField(
-        blank=True,
-        editable=False,
-    )
-    description = models.TextField(
-        blank=True,
-        editable=False,
-    )
-    start_time = models.DateTimeField(
-        null=True,
-        editable=False,
-    )
-    # auto-calculate from EventType's duration
-    end_time = models.DateTimeField(
-        null=True,
-        editable=False,
-    )
-    booker_name = models.CharField(
-        max_length=64,
-        blank=True,
-        editable=False,
-    )
-    booker_email = models.EmailField(
-        blank=True,
-        editable=False,
-    )
-
-    def __str__(self):
-        return f"{self.booker_name} {self.start_time} - {self.end_time}"
+    def delete(self, *args, **kwargs):
+        raise PermissionDenied("Cannot delete instance")
 
 
 class Schedule(models.Model):
@@ -180,9 +32,6 @@ class Schedule(models.Model):
     HIGH_BOUND = "Must be a high bounded value"
     IS_REQUIRED = "This field is required"
 
-    schedule_name = models.CharField(
-        max_length=64,
-    )
     sun_off = models.BooleanField(
         default=True,
     )
@@ -261,11 +110,9 @@ class Schedule(models.Model):
         blank=True,
     )
 
-    def __str__(self):
-        return self.schedule_name
-
     class Meta:
-        verbose_name = "availability schedule"
+        verbose_name = "my availability"
+        verbose_name_plural = "my availability"
 
     def clean(self):
         # ensure time ranges respect min and max
@@ -385,5 +232,74 @@ class Schedule(models.Model):
                 )
 
     def save(self, *args, **kwargs):
+        # only 1 instance allowed
+        if not self.pk and Schedule.objects.exists():
+            return ValidationError("Only one instance allowed")
+
         self.full_clean()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionDenied("Cannot delete instance")
+
+
+class Event(models.Model):
+    class LocationType(models.TextChoices):
+        PHONE_CALL = "Phone call"
+        GOOGLE_MEET = "Google Meet"
+
+    class Duration(models.IntegerChoices):
+        MIN_15 = 15, "15 min"
+        MIN_30 = 30, "30 min"
+        MIN_45 = 45, "45 min"
+        MIN_60 = 60, "60 min"
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    location_type = models.CharField(
+        max_length=32,
+        choices=LocationType.choices,
+        default=LocationType.PHONE_CALL,
+    )
+    phone_number = PhoneNumberField(
+        blank=True,
+        editable=False,
+    )
+    duration = models.IntegerField(
+        choices=Duration.choices,
+        default=Duration.MIN_15,
+        help_text="Duration of event in minutes",
+    )
+    description = models.TextField(
+        blank=True,
+    )
+    start_time = models.DateTimeField(
+        null=True,
+    )
+    # auto-calculate from duration
+    end_time = models.DateTimeField(
+        null=True,
+        editable=False,
+    )
+    booker_name = models.CharField(
+        max_length=64,
+        blank=True,
+    )
+    booker_email = models.EmailField(
+        blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.booker_name} {self.start_time} - {self.end_time}"
+
+    class Meta:
+        verbose_name = "my event"
+
+    def save(self, *args, **kwargs):
+        # auto-calculate end time if `start_time` is given
+        if self.start_time:
+            self.end_time = self.start_time + timedelta(self.duration)
         super().save(*args, **kwargs)
