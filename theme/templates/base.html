@@ -70,11 +70,14 @@
       function toggleDarkMode() {
         if (localStorage.theme === 'dark') {
           localStorage.theme = 'light';
+          // remove `dark` class
           document.documentElement.classList.remove('dark');
         } else {
           localStorage.theme = 'dark';
+          // add `dark` class
           document.documentElement.classList.add('dark');
         }
+        applyDarkIcon();
       }
 
       function applyDarkIcon() {
