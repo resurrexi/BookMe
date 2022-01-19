@@ -1,4 +1,4 @@
-{% load static tailwind_tags %}
+{% load static tailwind_tags django_htmx %}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -13,11 +13,31 @@
     {# the above tags must come first in the head before anything else -#}
     <script src="https://unpkg.com/htmx.org@1.6.1" integrity="sha384-tvG/2mnCFmGQzYC1Oh3qxQ7CkQ9kMzYjWZSNtrRZygHPDDqottzEJsqS4oUVodhW" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // set theme if not in localStorage
+        localStorage.theme = 'dark';
+        document.documentElement.classList.add('dark');
+      } else {
+        // set theme if not in localStorage
+        localStorage.theme = 'light';
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
 		{% tailwind_css %}
     {% block extrahead %}
     {% endblock %}
 	</head>
 	<body class="relative flex flex-col min-h-screen h-full bg-white transition-colors duration-1000 ease-in-out dark:bg-neutral-900">
+    <header class="flex-none max-w-3xl mx-auto w-full px-4 border-b sm:px-6 lg:px-8 dark:border-gray-600">
+      <div class="flex justify-between h-16">
+        <div class="flex-shrink-0 flex items-center">
+          <img src="{% static 'scheduler/android-chrome-512x512.png' %}" alt="logo" width="40" height="40" />
+        </div>
+        <div class="flex items-center" id="darkToggler">
+        </div>
+      </div>
+    </header>
     <main class="flex flex-auto justify-center">
       <div class="w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-4 sm:mb-6">
@@ -42,7 +62,38 @@
           &copy; {% now 'Y' %} Pursuit of Zen
         </p>
     </footer>
-    {%  block extrascripts %}
-    {%  endblock %}
+    <script>
+      const darkToggler = document.getElementById("darkToggler");
+      let darkIcon = null;
+
+      // create dark mode toggle handler
+      function toggleDarkMode() {
+        if (localStorage.theme === 'dark') {
+          localStorage.theme = 'light';
+          document.documentElement.classList.remove('dark');
+        } else {
+          localStorage.theme = 'dark';
+          document.documentElement.classList.add('dark');
+        }
+      }
+
+      function applyDarkIcon() {
+        // fill darkToggler div with appropriate dark/light toggle icon
+        if (localStorage.theme === 'dark') {
+          darkToggler.innerHTML = `{% include 'partials/sun-toggle.html' %}`;
+        } else {
+          darkToggler.innerHTML = `{% include 'partials/moon-toggle.html' %}`;
+        }
+
+        // find dark icon button after applying the html
+        darkIcon = darkToggler.getElementsByTagName("button")[0]
+        darkIcon.addEventListener("click", toggleDarkMode);
+      }
+
+      applyDarkIcon();
+    </script>
+    {% django_htmx_script %}
+    {% block extrascripts %}
+    {% endblock %}
 	</body>
 </html>
