@@ -3,10 +3,22 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from ..models import PhoneNumber, Schedule, Event
 
 
+class PhoneNumberTest(TestCase):
+    def test_only_one_instance_is_allowed(self):
+        PhoneNumber.objects.create(phone_number="+18001234455")
+        with self.assertRaisesRegex(ValidationError, r"one instance allowed"):
+            PhoneNumber.objects.create(phone_number="+18005556666")
+
+    def test_deleting_instance_is_not_allowed(self):
+        instance = PhoneNumber.objects.create(phone_number="+18001234455")
+        with self.assertRaises(PermissionDenied):
+            instance.delete()
+
+
 class ScheduleTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        Schedule.objects.create(
+        cls.schedule = Schedule.objects.create(
             mon_start="9:00:00",
             mon_end="17:00:00",
             tue_start="9:00:00",
@@ -19,13 +31,8 @@ class ScheduleTest(TestCase):
             fri_end="17:00:00",
         )
 
-    def setUp(self):
-        self.schedule = Schedule.objects.first()
-
     def test_only_one_instance_is_allowed(self):
-        with self.assertRaisesRegex(
-            ValidationError, r"Only one instance allowed"
-        ):
+        with self.assertRaisesRegex(ValidationError, r"one instance allowed"):
             Schedule.objects.create(
                 mon_start="9:00:00",
                 mon_end="17:00:00",

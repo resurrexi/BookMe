@@ -14,12 +14,12 @@ class PhoneNumber(models.Model):
         return f"{self.phone_number}"
 
     class Meta:
-        verbose_name = "my phone number"
-        verbose_name_plural = "my phone number"
+        verbose_name = "phone number"
+        verbose_name_plural = "phone number"
 
     def save(self, *args, **kwargs):
         # only 1 instance allowed
-        if not self.pk and PhoneNumber.objects.exists():
+        if self._state.adding and PhoneNumber.objects.exists():
             raise ValidationError("Only one instance allowed")
         super().save(*args, **kwargs)
 
@@ -111,8 +111,8 @@ class Schedule(models.Model):
     )
 
     class Meta:
-        verbose_name = "my availability"
-        verbose_name_plural = "my availability"
+        verbose_name = "availability schedule"
+        verbose_name_plural = "availability schedule"
 
     def clean(self):
         # ensure time ranges respect min and max
@@ -233,8 +233,8 @@ class Schedule(models.Model):
 
     def save(self, *args, **kwargs):
         # only 1 instance allowed
-        if not self.pk and Schedule.objects.exists():
-            return ValidationError("Only one instance allowed")
+        if self._state.adding and Schedule.objects.exists():
+            raise ValidationError("Only one instance allowed")
 
         self.full_clean()
         super().save(*args, **kwargs)
@@ -294,9 +294,6 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.booker_name} {self.start_time} - {self.end_time}"
-
-    class Meta:
-        verbose_name = "my event"
 
     def save(self, *args, **kwargs):
         # auto-calculate end time if `start_time` is given
