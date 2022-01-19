@@ -40,20 +40,19 @@
     </header>
     <main class="flex flex-auto justify-center">
       <div class="w-full max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="mb-4 sm:mb-6">
-          <h2 class="text-2xl font-semibold tracking-tight text-gray-700 sm:text-3xl dark:text-gray-200">
-            Book Me
-          </h2>
-        </div>
-        {% if messages %}
-          <div class="mb-6 space-y-2">
-            {% for message in messages %}
-              {% include 'partials/alert.html' %}
-            {% endfor %}
+        <div class="flex flex-col h-full">
+          {% if messages %}
+            <div class="flex-none mb-6 space-y-2">
+              {% for message in messages %}
+                {% include 'partials/alert.html' %}
+              {% endfor %}
+            </div>
+          {% endif %}
+          <div class="flex flex-auto items-center justify-center">
+            {% block content %}
+            {% endblock %}
           </div>
-        {% endif %}
-        {% block content %}
-        {% endblock %}
+        </div>
       </div>
     </main>
     <footer class="flex-none max-w-3xl mx-auto w-full px-4 py-4 border-t border-gray-200 sm:px-6 lg:px-8 dark:border-gray-600" aria-labelledby="footer-heading">
