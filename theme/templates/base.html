@@ -32,7 +32,9 @@
     <header class="flex-none max-w-3xl mx-auto w-full px-4 border-b sm:px-6 lg:px-8 dark:border-gray-600">
       <div class="flex justify-between h-16">
         <div class="flex-shrink-0 flex items-center">
-          <img src="{% static 'scheduler/android-chrome-512x512.png' %}" alt="logo" width="40" height="40" />
+          <a href="{% url 'scheduler:index' %}">
+            <img src="{% static 'scheduler/android-chrome-512x512.png' %}" alt="logo" width="40" height="40" />
+          </a>
         </div>
         <div class="flex items-center" id="darkToggler">
         </div>

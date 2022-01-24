@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <section class="w-full text-gray-500 dark:text-gray-400">
-    <form class="space-y-6 divide-y divide-gray-200 dark:divide-gray-800">
+  <section id="booking-section" class="w-full text-gray-500 dark:text-gray-400">
+    <form class="space-y-6 divide-y divide-gray-200 dark:divide-gray-600">
       <div>
         <label class="text-base font-medium text-gray-900 dark:text-gray-100">
           Event type
@@ -66,7 +66,7 @@
         </fieldset>
       </div>
       <div class="pt-3 flex justify-end items-center">
-        <button type="button" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <button type="button" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" hx-get="{% url 'scheduler:index' %}" hx-trigger="click" hx-target="#booking-section" hx-swap="outerHTML">
           Next
         </button>
       </div>
