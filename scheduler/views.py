@@ -14,12 +14,12 @@ def index(request):
 
 def time_picker(request, event):
     # dynamically generate cartesian product of location type and duration
-    _LOCATIONS = list(map(slugify, Event.LocationType.labels))
-    _DURATIONS = list(map(slugify, Event.Duration.labels))
-    _PRODUCT_RESULT = list(product(_LOCATIONS, _DURATIONS))
-    _EVENT_CHOICES = list(map(join_slugs, _PRODUCT_RESULT))
+    LOCATIONS = list(map(slugify, Event.LocationType.labels))
+    DURATIONS = list(map(slugify, Event.Duration.labels))
+    PRODUCT_RESULT = list(product(LOCATIONS, DURATIONS))
+    EVENT_CHOICES = list(map(join_slugs, PRODUCT_RESULT))
 
-    if event not in _EVENT_CHOICES:
+    if event not in EVENT_CHOICES:
         return redirect("scheduler:index")
 
     if request.htmx:

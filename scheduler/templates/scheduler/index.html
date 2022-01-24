@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <section id="booking-section" class="w-full text-gray-500 dark:text-gray-400">
-    <form class="space-y-6 divide-y divide-gray-200 dark:divide-gray-600">
+  <section class="w-full text-gray-500 dark:text-gray-400">
+    <form id="event-form" class="space-y-6 divide-y divide-gray-200 dark:divide-gray-600">
       <div>
         <label class="text-base font-medium text-gray-900 dark:text-gray-100">
           Event type
@@ -14,13 +14,13 @@
           <legend class="sr-only">Event type</legend>
           <div class="space-y-4">
             <div class="flex items-center">
-              <input id="phone" name="event-type" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="phone" name="eventType" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="phone" required>
               <label for="phone" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Phone call
               </label>
             </div>
             <div class="flex items-center">
-              <input id="gmeet" name="event-type" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="gmeet" name="eventType" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="gmeet">
               <label for="gmeet" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Google Meet
               </label>
@@ -39,25 +39,25 @@
           <legend class="sr-only">Duration</legend>
           <div class="space-y-4">
             <div class="flex items-center">
-              <input id="min15" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="min15" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="15" required>
               <label for="min15" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 15 minutes
               </label>
             </div>
             <div class="flex items-center">
-              <input id="min30" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="min30" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="30">
               <label for="min30" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 30 minutes
               </label>
             </div>
             <div class="flex items-center">
-              <input id="min45" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="min45" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="45">
               <label for="min45" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 45 minutes
               </label>
             </div>
             <div class="flex items-center">
-              <input id="min60" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300">
+              <input id="min60" name="duration" type="radio" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300" value="60">
               <label for="min60" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 60 minutes
               </label>
@@ -66,10 +66,42 @@
         </fieldset>
       </div>
       <div class="pt-3 flex justify-end items-center">
-        <button type="button" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" hx-get="{% url 'scheduler:index' %}" hx-trigger="click" hx-target="#booking-section" hx-swap="outerHTML">
+        <button type="submit" class="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
           Next
         </button>
       </div>
     </form>
   </section>
+{% endblock %}
+
+{% block extrascripts %}
+  <script>
+    function handleSubmit(e) {
+      let eventType = "phone-call"
+      let duration = ""
+
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const formProps = Object.fromEntries(formData);
+
+      if (formProps.eventType === "gmeet") {
+        eventType = "google-meet"
+      }
+      if (formProps.duration === "15") {
+        duration = "15-min"
+      } else if (formProps.duration === "30") {
+        duration = "30-min"
+      } else if (formProps.duration == "45") {
+        duration = "45-min"
+      } else {
+        duration = "60-min"
+      }
+
+      // redirect
+      window.location.pathname = `/${eventType}-${duration}`
+    }
+
+    const form = document.getElementById("event-form");
+    form.addEventListener("submit", handleSubmit);
+  </script>
 {% endblock %}
