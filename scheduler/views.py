@@ -1,23 +1,25 @@
+from itertools import product
 from django.shortcuts import render, redirect
+from django.utils.text import slugify
 from .models import Event
+
+
+def join_slugs(iterable):
+    return "-".join(iterable)
 
 
 def index(request):
     return render(request, "scheduler/index.html")
 
-def time_picker(request, event):
-    EVENT_CHOICES = [
-        "phone-call-15-min",
-        "phone-call-30-min",
-        "phone-call-45-min",
-        "phone-call-60-min",
-        "google-meet-15-min",
-        "google-meet-30-min",
-        "google-meet-45-min",
-        "google-meet-60-min",
-    ]
 
-    if event not in EVENT_CHOICES:
+def time_picker(request, event):
+    # dynamically generate cartesian product of location type and duration
+    _LOCATIONS = list(map(slugify, Event.LocationType.labels))
+    _DURATIONS = list(map(slugify, Event.Duration.labels))
+    _PRODUCT_RESULT = list(product(_LOCATIONS, _DURATIONS))
+    _EVENT_CHOICES = list(map(join_slugs, _PRODUCT_RESULT))
+
+    if event not in _EVENT_CHOICES:
         return redirect("scheduler:index")
 
     if request.htmx:
