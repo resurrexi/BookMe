@@ -32,7 +32,6 @@ class Schedule(models.Model):
     HIGH_BOUND = "Must be a high bounded value"
     IS_REQUIRED = "This field is required"
 
-    # TODO: add timezone field
     sun_off = models.BooleanField(
         default=True,
     )
