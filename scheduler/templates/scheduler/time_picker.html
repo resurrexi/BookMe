@@ -2,6 +2,11 @@
 
 {% block content %}
   <section>
-    TODO: Add time picker
+  {% for week in calendar %}
+    {% for day, availability in week %}
+      [<span>{{ day }}</span>, <span>{{ availability }}</span>]
+    {% endfor %}
+    <br />
+  {% endfor %}
   </section>
 {% endblock %}
