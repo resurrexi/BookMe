@@ -1,5 +1,6 @@
 import calendar
 from itertools import product
+from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
@@ -67,6 +68,7 @@ def time_picker(request, event):
         {
             "calendar": monthly_cal,
             "current_date": today,
+            "horizon_date": today + timedelta(days=60),
             "weekdays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
         },
     )
