@@ -62,11 +62,20 @@ def time_picker(request, event):
         add_availability_to_week(week, availability_flags) for week in weeks
     ]
 
+    # get the date with the month to display, if available
+    # if not available, default to today's date
+    # this will be the proxy for displaying the month on the calendar
+    calendar_day = request.GET.get("day", today)
+
     return render(
         request,
         template,
         {
+            "event": event,
             "calendar": monthly_cal,
+            "month_proxy": calendar_day,
+            "previous": weeks[0][0] + timedelta(days=-1),
+            "next": weeks[-1][-1] + timedelta(days=1),
             "current_date": today,
             "horizon_date": today + timedelta(days=60),
             "weekdays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
