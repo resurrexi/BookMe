@@ -61,11 +61,15 @@ def time_picker(request, event):
         add_availability_to_week(week, availability_flags) for week in weeks
     ]
 
+    # get the current month to display, if available
+    month = request.GET.get("month", today.month)
+
     return render(
         request,
         template,
         {
             "calendar": monthly_cal,
+            "calendar_month": month,
             "current_date": today,
             "weekdays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
         },

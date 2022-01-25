@@ -19,7 +19,7 @@
         </button>
       </div>
     </div>
-    <div class="grid grid-cols-7 auto-rows-max justify-items-center pt-8">
+    <div class="grid grid-cols-7 justify-items-center pt-8">
       {% for day in weekdays%}
         <div class="w-full mb-6">
           <p class="text-base font-medium text-center text-gray-800 dark:text-gray-200">
@@ -31,7 +31,7 @@
         {% for day, available in week %}
           <div class="px-2 py-2 flex w-full items-center justify-center">
             {% if day != 0 %}
-              <p class="w-7 h-7 rounded-full flex items-center justify-center text-base font-medium {% if day == current_date.day %}text-white bg-secondary-700 focus:outline-none{% elif available and day > current_date.day %}text-gray-500 dark:text-gray-400{% else %}text-gray-400 dark:text-gray-500{% endif %}">
+            <p class="w-full h-7 rounded-full flex items-center justify-center text-base font-medium {% if calendar_month == current_date.month and day == current_date.day %}text-white bg-secondary-700 focus:outline-none{% elif available and calendar_month >= current_date.month and day > current_date.day %}text-gray-500 dark:text-gray-400{% else %}text-gray-400 dark:text-gray-500{% endif %}">
                 {{ day }}
               </p>
             {% endif %}
