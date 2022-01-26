@@ -17,10 +17,8 @@ register_converter(DateConverter, "yyyymmdd")
 app_name = "scheduler"
 urlpatterns = [
     path("", views.index, name="index"),
-    path("<slug:event>/", views.day_picker, name="calendar"),
     path(
-        "<str:event_type>/<int:duration>/<yyyymmdd:date>",
-        views.time_picker,
-        name="time_picker",
+        "<slug:event>/<yyyymmdd:date>", views.time_picker, name="time_picker"
     ),
+    path("<slug:event>/", views.day_picker, name="calendar"),
 ]

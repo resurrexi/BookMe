@@ -1,1 +1,10 @@
-CONTENT HERE
+<div class="max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
+  {{ event }}<br />
+  {{ date }}
+</div>
+<div class="pt-3 flex justify-between items-center">
+  <button type="button" class="btn btn-neutral" hx-get="{% url 'scheduler:calendar' event=event %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML">
+    Back
+  </button>
+  <button type="button" class="inline-flex items-center py-2 px-4 "
+</div>

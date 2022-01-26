@@ -15,6 +15,13 @@ def add_availability_to_week(week, availability):
     return zip(week, availability)
 
 
+def parse_event(event):
+    split_string = event.split("-")
+    event_type = "phone" if split_string[0] == "phone" else "gmeet"
+    duration = int(split_string[-2])
+    return event_type, duration
+
+
 def index(request):
     return render(request, "scheduler/index.html")
 
@@ -69,18 +76,11 @@ def day_picker(request, event):
         add_availability_to_week(week, availability_flags) for week in weeks
     ]
 
-    # parse event type and duration from `event`
-    split_string = event.split("-")
-    event_type = "phone" if split_string[0] == "phone" else "gmeet"
-    duration = int(split_string[-2])
-
     return render(
         request,
         template,
         {
             "event": event,
-            "event_type": event_type,
-            "duration": duration,
             "calendar": monthly_cal,
             "month_proxy": calendar_day,
             "previous": weeks[0][0] + timedelta(days=-1),
@@ -92,15 +92,14 @@ def day_picker(request, event):
     )
 
 
-def time_picker(request, event_type, duration, date):
+def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
 
     return render(
         request,
         template,
         {
-            "event_type": event_type,
-            "duration": duration,
+            "event": event,
             "date": date,
         },
     )
