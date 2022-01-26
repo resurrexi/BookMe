@@ -20,6 +20,10 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Secrets directory for holding credentials/keys
+# NOTE: make sure to add this directory to .gitignore
+SECRETS_PATH = BASE_DIR / "secrets"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/

@@ -95,11 +95,41 @@ def day_picker(request, event):
 def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
 
+    # get the weekday of the date as number
+    # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+    weekday = datetime.strptime(date, "%Y%m%d").strftime("%w")
+
+    # get the schedule for that weekday
+    schedule = Schedule.objects.first()
+    if weekday == 0:
+        start = schedule.sun_start
+        end = schedule.sun_end
+    elif weekday == 1:
+        start = schedule.mon_start
+        end = schedule.mon_off
+    elif weekday == 2:
+        start = schedule.tue_start
+        end = schedule.tue_end
+    elif weekday == 3:
+        start = schedule.wed_start
+        end = schedule.wed_end
+    elif weekday == 4:
+        start = schedule.thu_start
+        end = schedule.thu_end
+    elif weekday == 5:
+        start = schedule.fri_start
+        end = schedule.fri_end
+    else:
+        start = schedule.sat_start
+        end = schedule.sat_end
+
     return render(
         request,
         template,
         {
             "event": event,
             "date": date,
+            "availability_start": start,
+            "availability_end": end,
         },
     )

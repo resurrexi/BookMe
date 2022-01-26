@@ -6,7 +6,7 @@ class DateConverter:
     regex = "[0-9]{8}"
 
     def to_python(self, value):
-        return int(value)
+        return value
 
     def to_url(self, value):
         return f"{value}"
