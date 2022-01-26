@@ -97,7 +97,7 @@ def time_picker(request, event, date):
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
-    weekday = datetime.strptime(date, "%Y%m%d").strftime("%w")
+    weekday = int(datetime.strptime(date, "%Y%m%d").strftime("%w"))
 
     # get the schedule for that weekday
     schedule = Schedule.objects.first()

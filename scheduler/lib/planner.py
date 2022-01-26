@@ -3,26 +3,15 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from uuid import uuid4
-from datetime import datetime, timedelta
+from scheduler.models import Event
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
 class EventPlanner:
-    def __init__(self, guests, event):
-        # event is dictionary with keys `id`, `start`, `end`, `type`, `name`, `description`
+    def __init__(self):
         self.token_file = settings.SECRETS_PATH / "token.json"
         self.credentials_file = settings.SECRETS_PATH / "credentials.json"
-        guests = [
-            {
-                "email": email,
-                "responseStatus": "accepted" if idx == 0 else "needsAction",
-            }
-            for idx, email in enumerate(guests)
-        ]
-        service = self._authorize()
-        self.event_states = self._plan_event(guests, event, service)
 
     def _authorize(self):
         creds = None
@@ -47,46 +36,67 @@ class EventPlanner:
 
         return calendar_service
 
-    def _plan_event(self, attendees, event, service):
-        new_event = {
-            "summary": event["name"],
-            "start": {"dateTime": event["start"]},
-            "end": {"dateTime": event["end"]},
-            "description": event["description"],
-            "attendees": attendees,
+    def plan_event(self, guests, event, event_name):
+        # first guest in the list should always be the app owner
+        guests = [
+            {
+                "email": email,
+                "responseStatus": "accepted" if idx == 0 else "needsAction",
+            }
+            for idx, email in enumerate(guests)
+        ]
+
+        service_body = {
+            "summary": event_name,
+            "start": {"dateTime": event.start_time},
+            "end": {"dateTime": event.end_time},
+            "description": event.description,
+            "attendees": guests,
             "reminders": {"useDefault": True},
         }
 
-        if event["type"] == "gmeet":
-            new_event["conferenceData"] = {
+        if event.location_type == Event.LocationType.GOOGLE_MEET:
+            service_body["conferenceData"] = {
                 "createRequest": {
-                    "requestId": event["id"],
+                    "requestId": event.id,
                     "conferenceSolutionKey": {"type": "hangoutsMeet"},
                 }
             }
+
+        service = self._authorize()
 
         return (
             service.events()
             .insert(
                 calendarId="primary",
                 sendNotifications=True,
-                body=new_event,
+                body=service_body,
                 conferenceDataVersion=1,
             )
             .execute()
         )
 
+    def get_events(self, time_lower, time_upper):
+        service = self._authorize()
+        results = []
+        page_token = None
 
-if __name__ == "__main__":
-    start = datetime.utcnow() + timedelta(hours=1)
-    end = datetime.utcnow() + timedelta(hours=2)
+        # https://developers.google.com/calendar/api/v3/reference/events/list
+        while True:
+            events = (
+                service.events()
+                .list(
+                    calendarId="primary",
+                    pageToken=page_token,
+                    timeMin=time_lower,
+                    timeMax=time_upper,
+                )
+                .execute()
+            )
+            for event in events["items"]:
+                results.append({"start": event["start"], "end": event["end"]})
+            page_token = events.get("nextPageToken")
+            if not page_token:
+                break
 
-    plan = EventPlanner(
-        ["yang.liquan87@gmail.com", "lyang@hush.com", "thedevhiro@gmail.com"],
-        {
-            "start": start.isoformat() + "Z",
-            "end": end.isoformat() + "Z",
-        },
-    )
-
-    print(plan.event_states)
+        return results
