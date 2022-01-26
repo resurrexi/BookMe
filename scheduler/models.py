@@ -1,25 +1,38 @@
 import uuid
 from datetime import timedelta
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class PhoneNumber(models.Model):
-    phone_number = PhoneNumberField(
+class Profile(AbstractUser):
+    first_name = models.CharField(
+        max_length=64,
         blank=True,
     )
+    last_name = models.CharField(
+        max_length=64,
+        blank=True,
+    )
+    email = models.EmailField(
+        help_text="Email where event invites will be sent to.",
+    )
+    phone_number = PhoneNumberField(
+        help_text="Shared with the booker for phone call events.",
+    )
+
+    REQUIRED_FIELDS = [
+        "email",
+        "phone_number",
+    ]
 
     def __str__(self):
-        return f"{self.phone_number}"
-
-    class Meta:
-        verbose_name = "phone number"
-        verbose_name_plural = "phone number"
+        return self.email
 
     def save(self, *args, **kwargs):
         # only 1 instance allowed
-        if self._state.adding and PhoneNumber.objects.exists():
+        if self._state.adding and Profile.objects.exists():
             raise ValidationError("Only one instance allowed")
         super().save(*args, **kwargs)
 

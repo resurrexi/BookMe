@@ -2,21 +2,31 @@ from datetime import timedelta
 from django.test import TestCase
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils import timezone
-from ..models import PhoneNumber, Schedule, Event
+from ..models import Profile, Schedule, Event
 
 
-class PhoneNumberTest(TestCase):
+class ProfileTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.phone = PhoneNumber.objects.create(phone_number="+18001234455")
+        cls.user = Profile.objects.create(
+            username="user",
+            email="user@domain.com",
+            phone_number="+18001234455",
+            password="fakepassword",
+        )
 
     def test_only_one_instance_is_allowed(self):
         with self.assertRaisesRegex(ValidationError, r"one instance allowed"):
-            PhoneNumber.objects.create(phone_number="+18005556666")
+            Profile.objects.create(
+                username="test",
+                email="test@domain.com",
+                phone_number="+18005556666",
+                password="fakepassword",
+            )
 
     def test_deleting_instance_is_not_allowed(self):
         with self.assertRaises(PermissionDenied):
-            self.phone.delete()
+            self.user.delete()
 
 
 class ScheduleTest(TestCase):

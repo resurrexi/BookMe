@@ -24,6 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # NOTE: make sure to add this directory to .gitignore
 SECRETS_PATH = BASE_DIR / "secrets"
 
+# Use custom user model
+AUTH_USER_MODEL = "scheduler.Profile"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/

@@ -1,27 +1,42 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.conf import settings
-from .models import PhoneNumber, Schedule, Event
+from .models import Profile, Schedule, Event
 
 
-@admin.register(PhoneNumber)
-class PhoneNumberAdmin(admin.ModelAdmin):
-    list_display = ("phone_number",)
+@admin.register(Profile)
+class ProfileAdmin(UserAdmin):
+    list_display = ("email",)
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "username",
+                    "password",
+                )
+            },
+        ),
+        (
+            "User details",
+            {
+                "fields": (
+                    ("first_name", "last_name"),
+                    "email",
+                    "phone_number",
+                )
+            },
+        ),
+    )
 
     def has_add_permission(self, request):
-        # don't allow if there's already an instance
-        if PhoneNumber.objects.exists():
-            return False
-        return super().has_add_permission(request)
+        # disable add due to singleton model
+        return False
 
     def has_delete_permission(self, request, obj=None):
         # disable delete due to singleton model
         return False
-
-    def add_view(self, request, form_url="", extra_context=None):
-        extra_context = {
-            "show_save_and_add_another": False,
-        }
-        return super().add_view(request, form_url, extra_context)
 
 
 @admin.register(Schedule)
