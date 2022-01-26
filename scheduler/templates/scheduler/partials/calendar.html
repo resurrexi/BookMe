@@ -1,0 +1,46 @@
+<div class="max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
+  <div class="px-4 flex items-center justify-between">
+    <span class="text-lg font-medium text-gray-900 dark:text-gray-100">
+      {{ month_proxy|date:"F Y" }}
+    </span>
+    <div class="flex items-center">
+      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="previous month" hx-get="{% url 'scheduler:time_picker' event=event %}?day={{ previous|date:'Ymd' }}" hx-trigger="click" hx-target="#timePicker" hx-swap="innerHTML">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="next month" hx-get="{% url 'scheduler:time_picker' event=event %}?day={{ next|date:'Ymd' }}" hx-trigger="click" hx-target="#timePicker" hx-swap="innerHTML">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-7 justify-items-center pt-8">
+    {% for day in weekdays%}
+      <div class="w-full mb-6">
+        <p class="text-base font-medium text-center text-gray-800 dark:text-gray-200">
+          {{ day }}
+        </p>
+      </div>
+    {% endfor %}
+    {% for week in calendar %}
+      {% for day, available in week %}
+        <div class="px-2 py-2 flex w-full items-center justify-center">
+          {% if day.month == month_proxy.month %}
+            <span class="w-full h-7 rounded-full flex items-center justify-center text-base font-medium {% if available and day|date:'Ymd' >= current_date|date:'Ymd' and day|date:'Ymd' <= horizon_date|date:'Ymd' %}cursor-pointer text-gray-500 hover:text-gray-50 hover:bg-secondary-700 dark:text-gray-400 dark:hover:text-gray-50 dark:hover:bg-secondary-600{% else %}cursor-default text-gray-400 dark:text-gray-500{% endif %}">
+              {{ day.day }}
+            </span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+<div class="pt-3 flex justify-end items-center">
+  <a href="{% url 'scheduler:index' %}">
+    <button type="button" class="transition-colors duration-1000 ease-in-out inline-flex items-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:text-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-900">
+      Start Over
+    </button>
+  </a>
+</div>

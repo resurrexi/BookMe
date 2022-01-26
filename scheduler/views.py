@@ -1,6 +1,6 @@
 import calendar
 from itertools import product
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
@@ -30,7 +30,7 @@ def time_picker(request, event):
         return redirect("scheduler:index")
 
     if request.htmx:
-        template = "scheduler/partials/time_picker_form.html"
+        template = "scheduler/partials/calendar.html"
     else:
         template = "scheduler/time_picker.html"
 
@@ -55,17 +55,19 @@ def time_picker(request, event):
     if availability.sat_off:
         availability_flags[6] = 0
 
-    # build calendar of available days for current month
-    cal = calendar.Calendar(firstweekday=calendar.SUNDAY)
-    weeks = cal.monthdatescalendar(today.year, today.month)
-    monthly_cal = [
-        add_availability_to_week(week, availability_flags) for week in weeks
-    ]
-
     # get the date with the month to display, if available
     # if not available, default to today's date
     # this will be the proxy for displaying the month on the calendar
-    calendar_day = request.GET.get("day", today)
+    calendar_day = datetime.strptime(
+        request.GET.get("day", today.strftime("%Y%m%d")), "%Y%m%d"
+    )
+
+    # build calendar of available days for current month
+    cal = calendar.Calendar(firstweekday=calendar.SUNDAY)
+    weeks = cal.monthdatescalendar(calendar_day.year, calendar_day.month)
+    monthly_cal = [
+        add_availability_to_week(week, availability_flags) for week in weeks
+    ]
 
     return render(
         request,
