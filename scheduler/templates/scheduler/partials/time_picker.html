@@ -1,8 +1,13 @@
 <div class="max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
-  {{ event }}<br />
-  {{ date }}<br />
-  {{ availability_start }}<br />
-  {{ availability_end }}<br />
+  <div class="text-gray-500 dark:text-gray-400">
+    {{ event }}<br />
+    {{ date }}<br />
+    {{ availability_start }}<br />
+    {{ availability_end }}<br />
+    {% for event in calendar_events %}
+      {{ event.start.dateTime }} - {{ event.end.dateTime }}<br />
+    {% endfor %}
+  </div>
 </div>
 <div class="pt-3 flex justify-between items-center">
   <button type="button" class="btn btn-neutral" hx-get="{% url 'scheduler:calendar' event=event %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML">

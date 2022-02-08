@@ -1,9 +1,10 @@
 import calendar
 from itertools import product
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
+from .lib.planner import EventPlanner
 from .models import Event, Schedule
 
 
@@ -94,6 +95,7 @@ def day_picker(request, event):
 
 def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
+    planner = EventPlanner()
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
@@ -123,6 +125,13 @@ def time_picker(request, event, date):
         start = schedule.sat_start
         end = schedule.sat_end
 
+    # get the calendar events for that day
+    time_min = datetime.strptime(date, "%Y%m%d").replace(tzinfo=timezone.utc)
+    time_max = time_min + timedelta(days=1)
+    calendar_events = planner.get_events(
+        time_min.isoformat(), time_max.isoformat()
+    )
+
     return render(
         request,
         template,
@@ -131,5 +140,6 @@ def time_picker(request, event, date):
             "date": date,
             "availability_start": start,
             "availability_end": end,
+            "calendar_events": calendar_events,
         },
     )
