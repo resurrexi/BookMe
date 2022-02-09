@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+.loading-container {
+  @apply hidden;
+}
+
+.htmx-request .loading-container {
+  @apply flex
+    items-center
+    justify-center;
+}
+
+.htmx-request.loading-container {
+  @apply flex
+    items-center
+    justify-center;
+}
+
 .alert-info {
   @apply bg-blue-50;
 }
