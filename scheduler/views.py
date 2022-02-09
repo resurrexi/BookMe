@@ -67,24 +67,6 @@ def day_picker(request, event):
     # determine current date in UTC
     today = timezone.now()
 
-    # build availability flags
-    availability_flags = [1, 1, 1, 1, 1, 1, 1]  # 1=day on, 0=day off
-    availability = Schedule.objects.first()
-    if availability.sun_off:
-        availability_flags[0] = 0
-    if availability.mon_off:
-        availability_flags[1] = 0
-    if availability.tue_off:
-        availability_flags[2] = 0
-    if availability.wed_off:
-        availability_flags[3] = 0
-    if availability.thu_off:
-        availability_flags[4] = 0
-    if availability.fri_off:
-        availability_flags[5] = 0
-    if availability.sat_off:
-        availability_flags[6] = 0
-
     # get the date with the month to display, if available
     # if not available, default to today's date
     # this will be the proxy for displaying the month on the calendar
@@ -95,16 +77,13 @@ def day_picker(request, event):
     # build calendar of available days for current month
     cal = calendar.Calendar(firstweekday=calendar.SUNDAY)
     weeks = cal.monthdatescalendar(calendar_day.year, calendar_day.month)
-    monthly_cal = [
-        add_availability_to_week(week, availability_flags) for week in weeks
-    ]
 
     return render(
         request,
         template,
         {
             "event": event,
-            "calendar": monthly_cal,
+            "calendar": weeks,
             "month_proxy": calendar_day,
             "previous": weeks[0][0] + timedelta(days=-1),
             "next": weeks[-1][-1] + timedelta(days=1),
