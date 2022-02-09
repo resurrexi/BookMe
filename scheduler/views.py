@@ -1,6 +1,8 @@
 import calendar
+import json
 from itertools import product
 from datetime import datetime, timedelta
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
@@ -49,7 +51,17 @@ def index(request):
     return render(request, "scheduler/index.html")
 
 
+def set_user_tz(request):
+    if request.method == "POST":
+        payload = json.loads(request.body)
+        request.session["user_tz"] = payload["timezone"]
+        return HttpResponse("Timezone set for session")
+    return HttpResponseNotAllowed(["GET"])
+
+
 def day_picker(request, event):
+    user_tz = request.session.get("user_tz", "Etc/UTC")
+
     # dynamically generate cartesian product of location type and duration
     LOCATIONS = list(map(slugify, Event.LocationType.labels))
     DURATIONS = list(map(slugify, Event.Duration.labels))
@@ -66,6 +78,8 @@ def day_picker(request, event):
 
     # determine current date in UTC
     today = timezone.now()
+    # TODO: convert current date into `user_tz` timezone
+    # TODO: show available days for that user's timezone
 
     # get the date with the month to display, if available
     # if not available, default to today's date
@@ -98,6 +112,9 @@ def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
     planner = EventPlanner()
     selected_date = datetime.strptime(date, "%Y%m%d")
+    user_tz = request.session.get("user_tz", "Etc/UTC")
+    # TODO: convert UTC times to `user_tz`
+    # TODO: show available times based on user's timezone
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat

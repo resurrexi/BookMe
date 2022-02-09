@@ -23,6 +23,19 @@
         localStorage.theme = 'light';
         document.documentElement.classList.remove('dark');
       }
+
+      if (!("timezone" in localStorage)) {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        fetch("{% url 'scheduler:set_user_tz' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: JSON.stringify({timezone})
+        });
+        localStorage.timezone = timezone;
+      }
     </script>
 		{% tailwind_css %}
     {% block extrahead %}
