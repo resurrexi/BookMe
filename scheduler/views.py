@@ -1,6 +1,6 @@
 import calendar
 from itertools import product
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
@@ -21,6 +21,28 @@ def parse_event(event):
     event_type = "phone" if split_string[0] == "phone" else "gmeet"
     duration = int(split_string[-2])
     return event_type, duration
+
+
+def build_available_times(start, end, duration, events):
+    available_times = []
+    current_start = start
+    current_end = current_start + timedelta(minutes=duration)
+    while current_end <= end:
+        # iterate through events
+        for event in events:
+            event_start = datetime.fromisoformat(event["start"]["dateTime"])
+            event_end = datetime.fromisoformat(event["end"]["dateTime"])
+            # back to beginning of loop if there's time conflicts with event
+            if (
+                current_start >= event_start and current_start < event_end
+            ) or (current_end > event_start and current_end <= event_end):
+                continue
+        # otherwise, append time to available times
+        available_times.append(current_start.isoformat())
+        # add duration to `current_start` and `current_end`
+        current_start = current_start + timedelta(minutes=duration)
+        current_end = current_start + timedelta(minutes=duration)
+    return available_times
 
 
 def index(request):
@@ -96,10 +118,11 @@ def day_picker(request, event):
 def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
     planner = EventPlanner()
+    selected_date = datetime.strptime(date, "%Y%m%d")
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
-    weekday = int(datetime.strptime(date, "%Y%m%d").strftime("%w"))
+    weekday = int(selected_date.strftime("%w"))
 
     # get the schedule for that weekday
     schedule = Schedule.objects.first()
@@ -125,11 +148,25 @@ def time_picker(request, event, date):
         start = schedule.sat_start
         end = schedule.sat_end
 
+    # attach date to schedule times
+    start = datetime.combine(selected_date.date(), start).replace(
+        tzinfo=timezone.utc
+    )
+    end = datetime.combine(selected_date.date(), end).replace(
+        tzinfo=timezone.utc
+    )
+
     # get the calendar events for that day
-    time_min = datetime.strptime(date, "%Y%m%d").replace(tzinfo=timezone.utc)
+    time_min = selected_date.replace(tzinfo=timezone.utc)
     time_max = time_min + timedelta(days=1)
     calendar_events = planner.get_events(
         time_min.isoformat(), time_max.isoformat()
+    )
+
+    # build available time slots
+    _, event_duration = parse_event(event)
+    available_times = build_available_times(
+        start, end, event_duration, calendar_events
     )
 
     return render(
@@ -137,9 +174,6 @@ def time_picker(request, event, date):
         template,
         {
             "event": event,
-            "date": date,
-            "availability_start": start,
-            "availability_end": end,
-            "calendar_events": calendar_events,
+            "available_times": available_times,
         },
     )

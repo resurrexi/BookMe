@@ -1,12 +1,13 @@
+{% load tz %}
+
 <div class="max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
   <div class="text-gray-500 dark:text-gray-400">
     {{ event }}<br />
-    {{ date }}<br />
-    {{ availability_start }}<br />
-    {{ availability_end }}<br />
-    {% for event in calendar_events %}
-      {{ event.start.dateTime }} - {{ event.end.dateTime }}<br />
-    {% endfor %}
+    <div id="availableTimes">
+      {% for available_time in available_times %}
+        <a class="block" href="#">{{ available_time }}</a>
+      {% endfor %}
+    </div>
   </div>
 </div>
 <div class="pt-3 flex justify-between items-center">
@@ -15,3 +16,13 @@
   </button>
   <button type="button" class="inline-flex items-center py-2 px-4 "
 </div>
+
+{% block extrascripts %}
+  <script>
+    const times = document.getElementById("availableTimes").children;
+    for (const link of times) {
+      const utcDate = new Date(link.innerText);
+      link.innerText = utcDate.toLocaleString();
+    }
+  </script>
+{% endblock %}
