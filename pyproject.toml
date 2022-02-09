@@ -16,6 +16,7 @@ django-tailwind = "^3.0.1"
 django-htmx = "^1.8.0"
 django-phonenumber-field = "^6.0.0"
 phonenumberslite = "^8.12.41"
+pytz = "^2021.3"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.12.2"
