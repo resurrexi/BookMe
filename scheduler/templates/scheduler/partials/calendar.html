@@ -29,8 +29,8 @@
         <div class="px-2 py-2 flex w-full items-center justify-center">
           {% if day.month == month_proxy.month %}
             <span class="w-full h-7 rounded-full flex items-center justify-center text-base font-medium {% if available and day|date:'Ymd' >= current_date|date:'Ymd' and day|date:'Ymd' <= horizon_date|date:'Ymd' %}cursor-pointer text-gray-500 hover:text-gray-50 hover:bg-secondary-700 dark:text-gray-400 dark:hover:text-gray-50 dark:hover:bg-secondary-600{% else %}cursor-default text-gray-400 dark:text-gray-500{% endif %}"{% if available and day|date:'Ymd' >= current_date|date:'Ymd' and day|date:'Ymd' <= horizon_date|date:'Ymd' %} hx-get="{% url 'scheduler:time_picker' event=event date=day|date:'Ymd' %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML" hx-indicator="#loadingContainer"{% endif %}>
-                {{ day.day }}
-              </span>
+              {{ day.day }}
+            </span>
           {% endif %}
         </div>
       {% endfor %}
