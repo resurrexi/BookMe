@@ -1,5 +1,6 @@
 import calendar
 import json
+import pytz
 from itertools import product
 from datetime import datetime, timedelta
 from django.http import HttpResponse, HttpResponseNotAllowed
@@ -60,7 +61,7 @@ def set_user_tz(request):
 
 
 def day_picker(request, event):
-    user_tz = request.session.get("user_tz", "Etc/UTC")
+    user_tz = pytz.timezone(request.session.get("user_tz", "Etc/UTC"))
 
     # dynamically generate cartesian product of location type and duration
     LOCATIONS = list(map(slugify, Event.LocationType.labels))
@@ -76,10 +77,8 @@ def day_picker(request, event):
     else:
         template = "scheduler/booking_form.html"
 
-    # determine current date in UTC
-    today = timezone.now()
-    # TODO: convert current date into `user_tz` timezone
-    # TODO: show available days for that user's timezone
+    # determine current date in user's timezone
+    today = timezone.now().astimezone(user_tz)
 
     # get the date with the month to display, if available
     # if not available, default to today's date
@@ -104,6 +103,7 @@ def day_picker(request, event):
             "current_date": today,
             "horizon_date": today + timedelta(days=60),
             "weekdays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+            "user_tz": user_tz,
         },
     )
 
@@ -112,9 +112,7 @@ def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
     planner = EventPlanner()
     selected_date = datetime.strptime(date, "%Y%m%d")
-    user_tz = request.session.get("user_tz", "Etc/UTC")
-    # TODO: convert UTC times to `user_tz`
-    # TODO: show available times based on user's timezone
+    user_tz = pytz.timezone(request.session.get("user_tz", "Etc/UTC"))
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
@@ -127,7 +125,7 @@ def time_picker(request, event, date):
         end = schedule.sun_end
     elif weekday == 1:
         start = schedule.mon_start
-        end = schedule.mon_off
+        end = schedule.mon_end
     elif weekday == 2:
         start = schedule.tue_start
         end = schedule.tue_end
@@ -144,17 +142,25 @@ def time_picker(request, event, date):
         start = schedule.sat_start
         end = schedule.sat_end
 
-    # attach date to schedule times
-    start = datetime.combine(selected_date.date(), start).replace(
-        tzinfo=timezone.utc
+    # attach date to schedule times, times saved in DB will be in UTC
+    # since UTC times can bleed into prior or next day, take the min/max
+    # of the selected date's time boundaries or the scheduled time boundaries
+    time_min = user_tz.localize(selected_date)
+    time_max = time_min + timedelta(days=1)
+    start = max(
+        pytz.utc.localize(
+            datetime.combine(selected_date.date(), start)
+        ).astimezone(user_tz),
+        time_min,
     )
-    end = datetime.combine(selected_date.date(), end).replace(
-        tzinfo=timezone.utc
+    end = min(
+        pytz.utc.localize(
+            datetime.combine(selected_date.date(), end)
+        ).astimezone(user_tz),
+        time_max,
     )
 
     # get the calendar events for that day
-    time_min = selected_date.replace(tzinfo=timezone.utc)
-    time_max = time_min + timedelta(days=1)
     calendar_events = planner.get_events(
         time_min.isoformat(), time_max.isoformat()
     )
@@ -171,5 +177,6 @@ def time_picker(request, event, date):
         {
             "event": event,
             "available_times": available_times,
+            "user_tz": user_tz,
         },
     )
