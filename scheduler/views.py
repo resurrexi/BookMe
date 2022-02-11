@@ -176,6 +176,7 @@ def time_picker(request, event, date):
         template,
         {
             "event": event,
+            "selected_date": selected_date.date(),
             "available_times": available_times,
             "user_tz": user_tz,
         },
