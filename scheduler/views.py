@@ -2,13 +2,51 @@ import calendar
 import json
 import pytz
 from itertools import product
-from datetime import datetime, timedelta
+from datetime import time, datetime, timedelta
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.utils import timezone
 from .lib.planner import EventPlanner
 from .models import Event, Schedule
+
+WEEKDAY_MAP = {
+    "0": {
+        "previous": ["sat_off", "sat_start", "sat_end"],
+        "now": ["sun_off", "sun_start", "sun_end"],
+        "next": ["mon_off", "mon_start", "mon_end"],
+    },
+    "1": {
+        "previous": ["sun_off", "sun_start", "sun_end"],
+        "now": ["mon_off", "mon_start", "mon_end"],
+        "next": ["tue_off", "tue_start", "tue_end"],
+    },
+    "2": {
+        "previous": ["mon_off", "mon_start", "mon_end"],
+        "now": ["tue_off", "tue_start", "tue_end"],
+        "next": ["wed_off", "wed_start", "wed_end"],
+    },
+    "3": {
+        "previous": ["tue_off", "tue_start", "tue_end"],
+        "now": ["wed_off", "wed_start", "wed_end"],
+        "next": ["thu_off", "thu_start", "thu_end"],
+    },
+    "4": {
+        "previous": ["wed_off", "wed_start", "wed_end"],
+        "now": ["thu_off", "thu_start", "thu_end"],
+        "next": ["fri_off", "fri_start", "fri_end"],
+    },
+    "5": {
+        "previous": ["thu_off", "thu_start", "thu_end"],
+        "now": ["fri_off", "fri_start", "fri_end"],
+        "next": ["sat_off", "sat_start", "sat_end"],
+    },
+    "6": {
+        "previous": ["fri_off", "fri_start", "fri_end"],
+        "now": ["sat_off", "sat_start", "sat_end"],
+        "next": ["sun_off", "sun_start", "sun_end"],
+    },
+}
 
 
 def join_slugs(iterable):
@@ -24,6 +62,75 @@ def parse_event(event):
     event_type = "phone" if split_string[0] == "phone" else "gmeet"
     duration = int(split_string[-2])
     return event_type, duration
+
+
+def build_dt_to_iso(date, time):
+    return pytz.utc.localize(datetime.combine(date, time)).isoformat()
+
+
+def build_artificial_events(selected_date, prev_day, next_day):
+    DAY_MAP = {
+        "previous": prev_day,
+        "now": selected_date,
+        "next": next_day,
+    }
+
+    # get the weekday of the date as number
+    # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+    weekday = selected_date.strftime("%w")
+
+    # use a buffer of a day from the selected date due to timezone differences
+    artificial_events = []
+    schedule = Schedule.objects.first()
+    for day in ["previous", "now", "next"]:
+        if getattr(schedule, WEEKDAY_MAP[weekday][day][0]):
+            artificial_events.append(
+                {
+                    "start": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(), time(0, 0, 0)
+                        )
+                    },
+                    "end": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(), time(23, 59, 59)
+                        )
+                    },
+                }
+            )
+        else:
+            artificial_events.append(
+                {
+                    "start": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(), time(0, 0, 0)
+                        )
+                    },
+                    "end": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(),
+                            getattr(schedule, WEEKDAY_MAP[weekday][day][1]),
+                        )
+                    },
+                }
+            )
+            artificial_events.append(
+                {
+                    "start": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(),
+                            getattr(schedule, WEEKDAY_MAP[weekday][day][2]),
+                        )
+                    },
+                    "end": {
+                        "dateTime": build_dt_to_iso(
+                            DAY_MAP[day].date(), time(23, 59, 59)
+                        )
+                    },
+                }
+            )
+
+    return artificial_events
 
 
 def build_available_times(start, end, duration, events):
@@ -120,58 +227,17 @@ def day_picker(request, event):
 
 def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
+
     planner = EventPlanner()
     selected_date = datetime.strptime(date, "%Y%m%d")
-    previous = selected_date + timedelta(days=-1)
-    next = selected_date + timedelta(days=1)
+    prev_day = selected_date + timedelta(days=-1)
+    next_day = selected_date + timedelta(days=1)
     user_tz = pytz.timezone(request.session.get("user_tz", "UTC"))
-
-    # get the weekday of the date as number
-    # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
-    weekday = int(selected_date.strftime("%w"))
-
-    # get the schedule for that weekday
-    # add a buffer of a day to account for timezone differences
-    schedule = Schedule.objects.first()
-    if weekday == 0:
-        start = schedule.sat_start or schedule.sun_start
-        end = schedule.mon_end or schedule.sun_end
-    elif weekday == 1:
-        start = schedule.sun_start or schedule.mon_start
-        end = schedule.tue_end or schedule.mon_end
-    elif weekday == 2:
-        start = schedule.mon_start or schedule.tue_start
-        end = schedule.wed_end or schedule.tue_end
-    elif weekday == 3:
-        start = schedule.tue_start or schedule.wed_start
-        end = schedule.thu_end or schedule.wed_end
-    elif weekday == 4:
-        start = schedule.wed_start or schedule.thu_start
-        end = schedule.fri_end or schedule.thu_end
-    elif weekday == 5:
-        start = schedule.thu_start or schedule.fri_start
-        end = schedule.sat_end or schedule.fri_end
-    else:
-        start = schedule.fri_start or schedule.sat_start
-        end = schedule.sun_end or schedule.sat_end
-
-    # attach date to schedule times, times saved in DB will be in UTC
-    # since UTC times can bleed into prior or next day, take the min/max
-    # of the selected date's time boundaries or the scheduled time boundaries
     time_min = user_tz.localize(selected_date)
     time_max = time_min + timedelta(days=1)
-    start = max(
-        pytz.utc.localize(datetime.combine(previous.date(), start)).astimezone(
-            user_tz
-        ),
-        time_min,
-    )
-    end = min(
-        pytz.utc.localize(datetime.combine(next.date(), end)).astimezone(
-            user_tz
-        ),
-        time_max,
-    )
+
+    # artificially build unavailable time slots based on schedule
+    unavailable = build_artificial_events(selected_date, prev_day, next_day)
 
     # get the calendar events for that day
     calendar_events = planner.get_events(
@@ -181,7 +247,7 @@ def time_picker(request, event, date):
     # build available time slots
     _, event_duration = parse_event(event)
     available_times = build_available_times(
-        start, end, event_duration, calendar_events
+        time_min, time_max, event_duration, unavailable + calendar_events
     )
 
     return render(
@@ -190,8 +256,8 @@ def time_picker(request, event, date):
         {
             "event": event,
             "selected_date": selected_date.date(),
-            "previous": previous.date(),
-            "next": next.date(),
+            "previous": prev_day.date(),
+            "next": next_day.date(),
             "available_times": available_times,
             "user_tz": user_tz,
         },

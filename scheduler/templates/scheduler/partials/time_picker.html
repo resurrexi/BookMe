@@ -24,11 +24,17 @@
     </div>
     <div class="pt-8">
       <div id="availableTimes" class="px-2 space-y-2 max-h-[54vh] overflow-auto">
-        {% for available_time in available_times %}
-          <button type="button" class="w-full text-center py-2 px-4 text-base font-medium bg-gradient-to-r hover:text-gray-50 hover:from-transparent hover:via-secondary-700 hover:to-transparent dark:hover:text-gray-50 dark:hover:from-transparent dark:hover:via-secondary-600 dark:hover:to-transparent">
-            {{ available_time|timezone:user_tz|time:"H:i" }}
-          </button>
-        {% endfor %}
+        {% if available_times %}
+          {% for available_time in available_times %}
+            <button type="button" class="w-full text-center py-2 px-4 text-base font-medium bg-gradient-to-r hover:text-gray-50 hover:from-transparent hover:via-secondary-700 hover:to-transparent dark:hover:text-gray-50 dark:hover:from-transparent dark:hover:via-secondary-600 dark:hover:to-transparent">
+              {{ available_time|timezone:user_tz|time:"H:i" }}
+            </button>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-2 px-4 text-base">
+            No times available
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
