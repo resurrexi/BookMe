@@ -7,10 +7,11 @@
     </select>
   </div>
   <div class="pt-6 text-gray-500 dark:text-gray-400">
-    {{ event }}<br />
-    <div id="availableTimes">
+    <div id="availableTimes" class="p-4 space-y-2 max-h-[54vh] overflow-auto">
       {% for available_time in available_times %}
-        <a class="block" href="#">{{ available_time }}</a>
+        <button type="button" class="w-full text-center py-2 px-4 text-lg font-medium text-gray-500 bg-gradient-to-r hover:text-gray-50 hover:from-transparent hover:via-secondary-700 hover:to-transparent dark:text-gray-400 dark:hover:text-gray-50 dark:hover:from-transparent dark:hover:via-secondary-600 dark:hover:to-transparent">
+          {{ available_time|timezone:user_tz|time:"H:i" }}
+        </button>
       {% endfor %}
     </div>
   </div>
@@ -21,13 +22,3 @@
   </button>
   <button type="button" class="inline-flex items-center py-2 px-4 "
 </div>
-
-{% block extrascripts %}
-  <script>
-    const times = document.getElementById("availableTimes").children;
-    for (const link of times) {
-      const utcDate = new Date(link.innerText);
-      link.innerText = utcDate.toLocaleString();
-    }
-  </script>
-{% endblock %}

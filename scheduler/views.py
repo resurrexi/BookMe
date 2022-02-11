@@ -41,7 +41,7 @@ def build_available_times(start, end, duration, events):
             ) or (current_end > event_start and current_end <= event_end):
                 continue
         # otherwise, append time to available times
-        available_times.append(current_start.isoformat())
+        available_times.append(current_start)
         # add duration to `current_start` and `current_end`
         current_start = current_start + timedelta(minutes=duration)
         current_end = current_start + timedelta(minutes=duration)
@@ -61,7 +61,7 @@ def set_user_tz(request):
 
 
 def day_picker(request, event):
-    user_tz = pytz.timezone(request.session.get("user_tz", "Etc/UTC"))
+    user_tz = pytz.timezone(request.session.get("user_tz", "UTC"))
 
     # dynamically generate cartesian product of location type and duration
     LOCATIONS = list(map(slugify, Event.LocationType.labels))
@@ -112,7 +112,7 @@ def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
     planner = EventPlanner()
     selected_date = datetime.strptime(date, "%Y%m%d")
-    user_tz = pytz.timezone(request.session.get("user_tz", "Etc/UTC"))
+    user_tz = pytz.timezone(request.session.get("user_tz", "UTC"))
 
     # get the weekday of the date as number
     # 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
