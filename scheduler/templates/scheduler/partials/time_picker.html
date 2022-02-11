@@ -1,6 +1,6 @@
 {% load tz %}
 
-<div class="max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
+<div class="relative max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
   <div>
     <select name="timezone" class="rounded-md block w-full pl-3 pr-10 py-2 text-base text-gray-700 border-gray-300 bg-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:text-gray-300 dark:border-gray-700 dark:bg-neutral-900 dark:focus:border-primary-500">
       <option selected>{{ user_tz }}</option>
@@ -8,7 +8,7 @@
   </div>
   <div class="pt-6 text-gray-500 dark:text-gray-400">
     <div class="flex items-center justify-between">
-      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="previous month" hx-get="{% url 'scheduler:calendar' event=event %}?day={{ previous|date:'Ymd' }}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML">
+      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="previous" hx-get="{% url 'scheduler:time_picker' event=event date=previous|date:'Ymd' %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML" hx-indicator="#loadingContainer">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
@@ -16,7 +16,7 @@
       <span class="text-lg font-medium text-gray-900 dark:text-gray-100">
         {{ selected_date|date:"l d M" }}
       </span>
-      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="next month" hx-get="{% url 'scheduler:calendar' event=event %}?day={{ next|date:'Ymd' }}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML">
+      <button type="button" class="p-2 text-lg text-primary-600 hover:scale-125 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-600" aria-label="next" hx-get="{% url 'scheduler:time_picker' event=event date=next|date:'Ymd' %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML" hx-indicator="#loadingContainer">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
         </svg>
@@ -32,6 +32,7 @@
       </div>
     </div>
   </div>
+  {% include 'scheduler/partials/loading_container.html' %}
 </div>
 <div class="pt-3 flex justify-between items-center">
   <button type="button" class="btn btn-neutral" hx-get="{% url 'scheduler:calendar' event=event %}" hx-trigger="click" hx-target="#bookingForm" hx-swap="innerHTML">

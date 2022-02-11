@@ -122,6 +122,8 @@ def time_picker(request, event, date):
     template = "scheduler/partials/time_picker.html"
     planner = EventPlanner()
     selected_date = datetime.strptime(date, "%Y%m%d")
+    previous = selected_date + timedelta(days=-1)
+    next = selected_date + timedelta(days=1)
     user_tz = pytz.timezone(request.session.get("user_tz", "UTC"))
 
     # get the weekday of the date as number
@@ -159,17 +161,15 @@ def time_picker(request, event, date):
     time_min = user_tz.localize(selected_date)
     time_max = time_min + timedelta(days=1)
     start = max(
-        pytz.utc.localize(
-            datetime.combine(
-                (selected_date + timedelta(days=-1)).date(), start
-            )
-        ).astimezone(user_tz),
+        pytz.utc.localize(datetime.combine(previous.date(), start)).astimezone(
+            user_tz
+        ),
         time_min,
     )
     end = min(
-        pytz.utc.localize(
-            datetime.combine((selected_date + timedelta(days=1)).date(), end)
-        ).astimezone(user_tz),
+        pytz.utc.localize(datetime.combine(next.date(), end)).astimezone(
+            user_tz
+        ),
         time_max,
     )
 
@@ -190,6 +190,8 @@ def time_picker(request, event, date):
         {
             "event": event,
             "selected_date": selected_date.date(),
+            "previous": previous.date(),
+            "next": next.date(),
             "available_times": available_times,
             "user_tz": user_tz,
         },
