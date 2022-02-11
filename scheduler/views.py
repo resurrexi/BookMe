@@ -28,20 +28,30 @@ def parse_event(event):
 
 def build_available_times(start, end, duration, events):
     available_times = []
+    now = timezone.now()
     current_start = start
     current_end = current_start + timedelta(minutes=duration)
     while current_end <= end:
-        # iterate through events
-        for event in events:
-            event_start = datetime.fromisoformat(event["start"]["dateTime"])
-            event_end = datetime.fromisoformat(event["end"]["dateTime"])
-            # back to beginning of loop if there's time conflicts with event
-            if (
-                current_start >= event_start and current_start < event_end
-            ) or (current_end > event_start and current_end <= event_end):
-                continue
-        # otherwise, append time to available times
-        available_times.append(current_start)
+        skip = False
+
+        if current_start > now:
+            # iterate through events
+            for event in events:
+                event_start = datetime.fromisoformat(
+                    event["start"]["dateTime"]
+                )
+                event_end = datetime.fromisoformat(event["end"]["dateTime"])
+                # break out of loop due to time conflicts with event
+                if (
+                    current_start >= event_start and current_start < event_end
+                ) or (current_end > event_start and current_end <= event_end):
+                    skip = True
+                    break
+
+            # only add to available times if `skip=False`
+            if not skip:
+                available_times.append(current_start)
+
         # add duration to `current_start` and `current_end`
         current_start = current_start + timedelta(minutes=duration)
         current_end = current_start + timedelta(minutes=duration)
@@ -119,28 +129,29 @@ def time_picker(request, event, date):
     weekday = int(selected_date.strftime("%w"))
 
     # get the schedule for that weekday
+    # add a buffer of a day to account for timezone differences
     schedule = Schedule.objects.first()
     if weekday == 0:
-        start = schedule.sun_start
-        end = schedule.sun_end
+        start = schedule.sat_start or schedule.sun_start
+        end = schedule.mon_end or schedule.sun_end
     elif weekday == 1:
-        start = schedule.mon_start
-        end = schedule.mon_end
+        start = schedule.sun_start or schedule.mon_start
+        end = schedule.tue_end or schedule.mon_end
     elif weekday == 2:
-        start = schedule.tue_start
-        end = schedule.tue_end
+        start = schedule.mon_start or schedule.tue_start
+        end = schedule.wed_end or schedule.tue_end
     elif weekday == 3:
-        start = schedule.wed_start
-        end = schedule.wed_end
+        start = schedule.tue_start or schedule.wed_start
+        end = schedule.thu_end or schedule.wed_end
     elif weekday == 4:
-        start = schedule.thu_start
-        end = schedule.thu_end
+        start = schedule.wed_start or schedule.thu_start
+        end = schedule.fri_end or schedule.thu_end
     elif weekday == 5:
-        start = schedule.fri_start
-        end = schedule.fri_end
+        start = schedule.thu_start or schedule.fri_start
+        end = schedule.sat_end or schedule.fri_end
     else:
-        start = schedule.sat_start
-        end = schedule.sat_end
+        start = schedule.fri_start or schedule.sat_start
+        end = schedule.sun_end or schedule.sat_end
 
     # attach date to schedule times, times saved in DB will be in UTC
     # since UTC times can bleed into prior or next day, take the min/max
@@ -149,13 +160,15 @@ def time_picker(request, event, date):
     time_max = time_min + timedelta(days=1)
     start = max(
         pytz.utc.localize(
-            datetime.combine(selected_date.date(), start)
+            datetime.combine(
+                (selected_date + timedelta(days=-1)).date(), start
+            )
         ).astimezone(user_tz),
         time_min,
     )
     end = min(
         pytz.utc.localize(
-            datetime.combine(selected_date.date(), end)
+            datetime.combine((selected_date + timedelta(days=1)).date(), end)
         ).astimezone(user_tz),
         time_max,
     )
