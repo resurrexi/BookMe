@@ -220,7 +220,8 @@ def day_picker(request, event):
             "current_date": today,
             "horizon_date": today + timedelta(days=60),
             "weekdays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-            "user_tz": user_tz,
+            "user_tz": user_tz.zone,
+            "timezones": pytz.common_timezones,
         },
     )
 
@@ -259,6 +260,7 @@ def time_picker(request, event, date):
             "previous": prev_day.date(),
             "next": next_day.date(),
             "available_times": available_times,
-            "user_tz": user_tz,
+            "user_tz": user_tz.zone,
+            "timezones": pytz.common_timezones,
         },
     )
