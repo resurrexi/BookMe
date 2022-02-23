@@ -178,6 +178,13 @@ def set_user_tz(request):
 
 
 def day_picker(request, event):
+    # get timezone optional param, if passed into url
+    # this param is passed via htmx
+    tz_param = request.GET.get("timezone", None)
+    # if param was passed, update session variable
+    if tz_param:
+        request.session["user_tz"] = tz_param
+
     user_tz = pytz.timezone(request.session.get("user_tz", "UTC"))
 
     # dynamically generate cartesian product of location type and duration
@@ -194,8 +201,10 @@ def day_picker(request, event):
     else:
         template = "scheduler/booking_form.html"
 
-    # determine current date in user's timezone
-    today = timezone.now().astimezone(user_tz)
+    # determine current date in user's timezone and make date naive
+    # making the date naive will force django to resolve the date as-is
+    # without converting to UTC when rendering in the template
+    today = timezone.now().astimezone(user_tz).replace(tzinfo=None)
 
     # get the date with the month to display, if available
     # if not available, default to today's date
@@ -227,6 +236,13 @@ def day_picker(request, event):
 
 
 def time_picker(request, event, date):
+    # get timezone optional param, if passed into url
+    # this param is passed via htmx
+    tz_param = request.GET.get("timezone", None)
+    # if param was passed, update session variable
+    if tz_param:
+        request.session["user_tz"] = tz_param
+
     template = "scheduler/partials/time_picker.html"
 
     planner = EventPlanner()

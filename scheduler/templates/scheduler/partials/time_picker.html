@@ -2,7 +2,7 @@
 
 <div class="relative max-w-sm w-full mx-auto rounded-md shadow-lg border border-gray-200 p-4 md:p-8 dark:border-gray-600">
   <div>
-    <select name="timezone" class="rounded-md block w-full pl-3 pr-10 py-2 text-base text-gray-700 border-gray-300 bg-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:text-gray-300 dark:border-gray-700 dark:bg-neutral-900 dark:focus:border-primary-500">
+    <select id="timezone-select" name="timezone" class="rounded-md block w-full pl-3 pr-10 py-2 text-base text-gray-700 border-gray-300 bg-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:text-gray-300 dark:border-gray-700 dark:bg-neutral-900 dark:focus:border-primary-500" hx-get="{% url 'scheduler:time_picker' event=event date=selected_date|date:'Ymd' %}" hx-target="#bookingForm" hx-swap="innerHTML" hx-indicator="#loadingContainer">
       {% for tz in timezones %}
         <option {% if tz == user_tz %}selected{% endif %}>{{ tz }}</option>
       {% endfor %}
@@ -48,3 +48,13 @@
   </button>
   <button type="button" class="inline-flex items-center py-2 px-4 "
 </div>
+
+{% block extrascripts %}
+  <script>
+    // update timezone local storage variable after timezone change
+    var tzSelector = document.getElementById("timezone-select");
+    tzSelector.addEventListener("change", function(e) {
+      localStorage.timezone = e.target.value;
+    });
+  </script>
+{% endblock %}
