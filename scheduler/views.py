@@ -144,6 +144,7 @@ def build_available_times(start, end, duration, events):
         skip = False
 
         if current_start > now:
+            # TODO: fix error when all-day events are in the calendar
             # iterate through events
             for event in events:
                 event_start = datetime.fromisoformat(
