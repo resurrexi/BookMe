@@ -1,12 +1,14 @@
 import calendar
 import json
-import pytz
+from datetime import datetime, time, timedelta
 from itertools import product
-from datetime import time, datetime, timedelta
+
+import pytz
 from django.http import HttpResponse, HttpResponseNotAllowed
-from django.shortcuts import render, redirect
-from django.utils.text import slugify
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.text import slugify
+
 from .lib.planner import EventPlanner
 from .models import Event, Schedule
 
